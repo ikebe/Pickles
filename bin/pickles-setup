@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+package main;
+use strict;
+use warnings;
+use Module::Setup;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib";
+use Pickles::Setup::Flavor;
+
+my $msetup = Module::Setup->new;
+$msetup->setup_options;
+$msetup->options->{direct} = 1;
+$msetup->options->{flavor_class} = '+Pickles::Setup::Flavor';
+{
+    no warnings 'redefine';
+    *Module::Setup::_load_flavor_class = sub { 'Pickles::Setup::Flavor' };
+    $msetup->run;
+}
+
