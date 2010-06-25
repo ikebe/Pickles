@@ -12,6 +12,8 @@ __PACKAGE__->mk_classdata(__plugins => {});
 
 sub register {
     my( $class, $name, $component ) = @_;
+    # register class.
+    Plack::Util::load_class( $component ) unless ref $component;
     $class->__registered_components->{$name} = $component;
 }
 
@@ -119,17 +121,23 @@ sub render {
 
 sub dispatch {
     my $self = shift;
-    $self->prepare;
+    $self->_prepare;
     $self->call_trigger('pre_dispatch');
     my $controller_class = $self->controller_class;
-    my $action_method = $self->action_method;
+    my $action = $self->action;
     my $args = $self->args;
     my $controller = $controller_class->new;
-    $controller->execute( $action_method, $self, $args );
+    $controller->execute( $action, $self, $args );
     $self->call_trigger('post_dispatch');
 }
 
-sub prepare {}
+sub _prepare {
+    my $self = shift;
+    my $path = $self->req->path_info;
+    $path .= 'index' if $path =~ m{/$};
+    $path =~ s{^/}{};
+    $self->stash->{template} = $path;
+}
 
 sub apply_filters {
     my $self = shift;
@@ -165,13 +173,6 @@ sub redirect {
     $self->finished(1);
 }
 
-sub template_filename {
-    my $self = shift;
-    my $path = $self->req->path_info;
-    $path .= 'index' if $path =~ m{/$};
-    $self->config->path_to( 'view', $path. '.html' );
-}
-
 sub controller_class {
     my $self = shift;
     my $match = $self->match;
@@ -182,7 +183,7 @@ sub controller_class {
     );
 }
 
-sub action_method {
+sub action {
     my $self = shift;
     my $match = $self->match;
     $match->{action};

@@ -236,10 +236,10 @@ file: view/index.html
 template: |
   <html>
   <head>
-      <title>[% '[' _ '% c.appname %' _ ']' %]</title>
+      <title>[% '[' _ '% c.appname | html %' _ ']' %]</title>
   </head>
   <body>
-  <h1>Hello [% '[' _ '% c.appname %' _ ']' %]!</h1>
+  <h1>Hello [% '[' _ '% c.appname | html %' _ ']' %]!</h1>
   </body>
   </html>
 ---

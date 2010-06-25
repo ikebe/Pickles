@@ -11,14 +11,19 @@ sub new {
 
 sub render {
     my( $self, $c ) = @_;
-    my $config = $c->config->{'View::TT'} || {};
+    my $config = $c->config->{'View::TT'} || {
+        TEMPLATE_EXTENSION => '.html',
+    };
     my $tt = Template->new({
         ENCODING => 'utf8',
         UNICODE => 1,
         ABSOLUTE => 1,
+        INCLUDE_PATH => [
+            $c->config->path_to('view'),
+        ],
         %{$config},
     });
-    my $template = $c->stash->{template} || $c->template_filename;
+    my $template = $c->stash->{template}. $config->{TEMPLATE_EXTENSION};
     $tt->process( $template, {
         %{$c->stash},
         c => $c,
