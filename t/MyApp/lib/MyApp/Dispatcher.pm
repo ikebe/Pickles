@@ -1,11 +1,13 @@
 package MyApp::Dispatcher;
 use strict;
-use HTTPx::Dispatcher;
+use base qw(Pickles::Dispatcher);
 
-connect '/' => {
-    controller => 'Root',
-    action => 'index',
-};
+sub routes {
+    [
+        '/' => { controller => 'Root', action => 'index' },
+        '/foo' => { controller => 'Root', action => 'foo' },
+    ];
+}
 
 1;
 

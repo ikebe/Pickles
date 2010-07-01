@@ -54,6 +54,8 @@ sub load_config {
             %{$conf},
         );
     }
+    $self->{__files} = $files;
+    $self->{__time} = time;
     for my $key( keys %config ) {
         $self->{$key} = $config{$key};
     }

@@ -8,6 +8,7 @@ use String::CamelCase qw(camelize);
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
+__PACKAGE__->mk_classdata(__dispatcher => undef);
 
 sub register {
     my( $class, $name, $component ) = @_;
@@ -101,7 +102,8 @@ sub config {
 
 sub match {
     my $self = shift;
-    $self->{_match} ||= $self->dispatcher_class->match( $self->req );
+    my $dispatcher = $self->dispatcher_class->instance;
+    $self->{_match} ||= $dispatcher->match( $self->req );
 }
 
 sub render {
@@ -125,6 +127,7 @@ sub dispatch {
     my $controller_class = $self->controller_class;
     my $action = $self->action;
     unless ( $controller_class && defined $action ) {
+        $self->res->code( 404 );
         $self->not_found;
         return $self->res->finalize;
     }
@@ -188,7 +191,7 @@ sub finalize {
 sub uri_for {
     my( $self, @args ) = @_;
     my $req = $self->req;
-    my $uri = $req->base;
+    my $uri = $req->uri;
     my $params =
         ( scalar @args && ref $args[$#args] eq 'HASH' ? pop @args : {} );
     my $path = ( $args[0] =~ m{^/} ) ? shift @args : $uri->path;
@@ -214,6 +217,7 @@ sub controller_class {
     my $self = shift;
     my $match = $self->match;
     my $controller = $match->{controller};
+    return unless $controller;
     my $class = eval {
         Plack::Util::load_class(
             'Controller::'. camelize( $match->{controller} ), 

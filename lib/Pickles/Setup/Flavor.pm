@@ -175,7 +175,7 @@ template: |+
   use strict;
   use warnings;
   use parent 'Pickles::Context';
-
+  
   __PACKAGE__->load_plugins(qw(Encode));
   
   1;
@@ -187,12 +187,13 @@ file: lib/____var-module_path-var____/Dispatcher.pm
 template: |
   package [% module %]::Dispatcher;
   use strict;
-  use HTTPx::Dispatcher;
+  use base qw(Pickles::Dispatcher);
   
-  connect '/' => {
-      controller => 'Root',
-      action => 'index',
-  };
+  sub routes {
+      [
+          '/' => { controller => 'Root', action => 'index' },
+      ];
+  }
   
   1;
   
