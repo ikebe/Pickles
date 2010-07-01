@@ -1,0 +1,10 @@
+<html>
+<head>
+    <title>[% c.appname | html %]</title>
+</head>
+<body>
+<h1>Hello [% c.appname | html %]!</h1>
+
+<div id="count">[% cnt = c.session.count || 0; c.session.count = cnt + 1; cnt; %]</div>
+</body>
+</html>

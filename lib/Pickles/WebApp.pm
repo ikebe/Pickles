@@ -10,12 +10,6 @@ sub handler {
         my $c = $context_class->new( $env );
         $c->dispatch;
     };
-    for my $plugin( $context_class->plugins ) {
-        if ( $plugin->can('wrap_app') ) {
-            my $config = $context_class->config;
-            $app = $plugin->wrap_app( $app, $config );
-        }
-    }
     $app;
 }
 
