@@ -6,7 +6,6 @@ use Plack::Util::Accessor qw(env stash finished);
 use Class::Trigger qw(pre_dispatch post_dispatch pre_render post_render pre_filter post_filter pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 
-
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 
@@ -125,10 +124,32 @@ sub dispatch {
     $self->call_trigger('pre_dispatch');
     my $controller_class = $self->controller_class;
     my $action = $self->action;
+    unless ( $controller_class && defined $action ) {
+        $self->not_found;
+        return $self->res->finalize;
+    }
     my $args = $self->args;
     my $controller = $controller_class->new;
     $controller->execute( $action, $self, $args );
     $self->call_trigger('post_dispatch');
+    # return PSGI response.
+    $self->finalize;
+}
+
+sub not_found {
+    my $c = shift;
+    $c->res->content_type('text/html');
+    $c->res->body(<<'HTML');
+<html>
+<head>
+<title>404 Not Found</title>
+</head>
+<body>
+<h1>404 File Not Found</h1>
+</body>
+</html>
+HTML
+    
 }
 
 sub _prepare {
@@ -136,7 +157,7 @@ sub _prepare {
     my $path = $self->req->path_info;
     $path .= 'index' if $path =~ m{/$};
     $path =~ s{^/}{};
-    $self->stash->{template} = $path;
+    $self->stash->{template} = $path. '.html';
 }
 
 sub apply_filters {
@@ -164,11 +185,27 @@ sub finalize {
     $result;
 }
 
+sub uri_for {
+    my( $self, @args ) = @_;
+    my $req = $self->req;
+    my $uri = $req->base;
+    my $params =
+        ( scalar @args && ref $args[$#args] eq 'HASH' ? pop @args : {} );
+    my $path = ( $args[0] =~ m{^/} ) ? shift @args : $uri->path;
+    my @path_segments = grep { $_ } map {
+        split /\//, $_
+    } ($path, @args);
+    $uri->path_segments( @path_segments );
+    $uri->query_form( %$params ) if $params;
+    $uri;
+}
+
+
 sub redirect {
     my( $self, $url, $code ) = @_;
     $code ||= 302;
     $self->res->status( $code );
-    $url = ($url =~ m{^https?://}) ? $url : $self->request->uri_for( $url );
+    $url = ($url =~ m{^https?://}) ? $url : $self->uri_for( $url );
     $self->res->headers( Location => $url );
     $self->finished(1);
 }
@@ -177,10 +214,13 @@ sub controller_class {
     my $self = shift;
     my $match = $self->match;
     my $controller = $match->{controller};
-    Plack::Util::load_class(
-        'Controller::'. camelize( $match->{controller} ), 
-        $self->appname
-    );
+    my $class = eval {
+        Plack::Util::load_class(
+            'Controller::'. camelize( $match->{controller} ), 
+            $self->appname
+        );
+    };
+    $class;
 }
 
 sub action {

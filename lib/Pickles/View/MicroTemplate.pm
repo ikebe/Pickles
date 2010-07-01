@@ -2,6 +2,7 @@ package Pickles::View::MicroTemplate;
 use strict;
 use base qw(Pickles::View);
 use Text::MicroTemplate::Extended;
+use Encode;
 
 sub new {
     my $class = shift;
@@ -17,16 +18,18 @@ sub render {
         c => $c,
     );
     my $mt = Text::MicroTemplate::Extended->new(
-        extension => '.html',
+        extension => '',
         include_path => [
             $c->config->path_to('view'),
+            $c->config->path_to('view', 'inc'),
         ],
         %{$config},
         template_args => \%args,
     );
     my $template = $c->stash->{template};
-    warn $template;
-    $mt->render( $template );
+    # $body is-a Text::MicroTemplate::EncodedString
+    my $body = $mt->render( $template );
+    (ref $body && $body->can('as_string')) ? $body->as_string : $body;
 }
 
 1;

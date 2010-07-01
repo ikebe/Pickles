@@ -175,6 +175,8 @@ template: |+
   use strict;
   use warnings;
   use parent 'Pickles::Context';
+
+  __PACKAGE__->load_plugins(qw(Encode));
   
   1;
   

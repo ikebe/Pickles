@@ -10,9 +10,9 @@ sub new {
 
 sub execute {
     my( $self, $name, $c, $args ) = @_;
-    $self->call_trigger( 'pre_action' );
+    $self->call_trigger( 'pre_action', $c );
     $self->$name( $c, $args );
-    $self->call_trigger( 'post_action' );
+    $self->call_trigger( 'post_action', $c );
 }
 
 1;

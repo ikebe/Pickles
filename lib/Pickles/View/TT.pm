@@ -12,7 +12,7 @@ sub new {
 sub render {
     my( $self, $c ) = @_;
     my $config = $c->config->{'View::TT'} || {
-        TEMPLATE_EXTENSION => '.html',
+        TEMPLATE_EXTENSION => '',
     };
     my $tt = Template->new({
         ENCODING => 'utf8',
@@ -20,6 +20,7 @@ sub render {
         ABSOLUTE => 1,
         INCLUDE_PATH => [
             $c->config->path_to('view'),
+            $c->config->path_to('view', 'inc'),
         ],
         %{$config},
     });

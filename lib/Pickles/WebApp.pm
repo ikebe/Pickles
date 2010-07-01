@@ -9,7 +9,6 @@ sub handler {
         my $env = shift;
         my $c = $context_class->new( $env );
         $c->dispatch;
-        $c->finalize; # return PSGI response.
     };
     for my $plugin( $context_class->plugins ) {
         if ( $plugin->can('wrap_app') ) {
