@@ -48,7 +48,7 @@ sub load_config {
     my $files = $self->get_config_files;
     my %config;
     for my $file( @{$files} ) {
-        my $conf = require $file;
+        my $conf = do $file;
         %config = (
             %config,
             %{$conf},

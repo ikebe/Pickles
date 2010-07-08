@@ -1,6 +1,10 @@
 package Pickles::Dispatcher;
 use strict;
 use Router::Simple;
+use base qw(Class::Data::Inheritable);
+use Carp ();
+
+__PACKAGE__->mk_classdata('__Routes');
 
 sub instance {
     my $class = shift;
@@ -14,7 +18,7 @@ sub _init {
     my $class = shift;
     my $self = bless {}, $class;
     my $router = Router::Simple->new;
-    my @routes = @{$class->routes};
+    my @routes = @{$class->__Routes};
     for (@routes) {
         my( $path, $rule ) = splice( @routes, 0, 2 );
         $router->connect( $path, $rule );
@@ -34,9 +38,18 @@ sub match {
 }
 
 sub routes {
-    return [
-        '/' => { controller => 'Root', action => 'index', },
-    ];
+    my( $class, $routes ) = @_;
+    $class->__Routes( $routes );
+}
+
+sub connect {
+    my $class = shift;
+    unless ( @_ == 2 ) {
+        Carp::croak("Odd number of parameters: @_");
+    }
+    my $routes = $class->__Routes;
+    push @{$routes}, @_;
+    $class->__Routes( $routes );
 }
 
 1;
