@@ -19,7 +19,7 @@ sub _init {
     my $self = bless {}, $class;
     my $router = Router::Simple->new;
     my @routes = @{$class->__Routes};
-    for (@routes) {
+    while ( @routes ) {
         my( $path, $rule ) = splice( @routes, 0, 2 );
         $router->connect( $path, $rule );
     }
@@ -34,7 +34,14 @@ sub router {
 
 sub match {
     my( $self, $req ) = @_;
-    $self->router->match( $req->env );
+    my $match = $self->router->match( $req->env );
+    my %args;
+    for my $key( keys %{$match} ) {
+        next if $key =~ m{^(controller|action)$};
+        $args{$key} = delete $match->{$key};
+    }
+    $match->{args} = \%args;
+    $match;
 }
 
 sub routes {

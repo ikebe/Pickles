@@ -7,6 +7,10 @@ __PACKAGE__->routes([
     '/foo' => { controller => 'Root', action => 'foo' },
 ]);
 
+__PACKAGE__->connect( 
+    '/items/:id' => { 'controller' => 'Item', action => 'view', } 
+);
+
 1;
 
 __END__
