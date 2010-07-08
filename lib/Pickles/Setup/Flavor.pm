@@ -189,11 +189,9 @@ template: |
   use strict;
   use base qw(Pickles::Dispatcher);
   
-  sub routes {
-      [
-          '/' => { controller => 'Root', action => 'index' },
-      ];
-  }
+  __PACKAGE__->routes([
+      '/' => { controller => 'Root', action => 'index' } 
+  ]);
   
   1;
   
