@@ -12,13 +12,13 @@ sub new {
 
 sub render {
     my( $self, $c ) = @_;
-    my $config = $c->config->{'View::MicroTemplate'} || {};
+    my $config = $self->merge_config( $c );
     my %args = (
         %{$c->stash},
         c => $c,
     );
     my $mt = Text::MicroTemplate::Extended->new(
-        extension => '',
+#        extension => '.html',
         include_path => [
             $c->config->path_to('view'),
             $c->config->path_to('view', 'inc'),

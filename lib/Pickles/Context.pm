@@ -160,7 +160,7 @@ sub _prepare {
     my $path = $self->req->path_info;
     $path .= 'index' if $path =~ m{/$};
     $path =~ s{^/}{};
-    $self->stash->{template} = $path. '.html';
+    $self->stash->{template} = $path;
 }
 
 sub apply_filters {

@@ -46,6 +46,7 @@ sub match {
 
 sub routes {
     my $class = shift;
+    $class->__Routes unless @_;
     my $routes = $_[0];
     if ( @_ > 1 ) {
         $routes = [ @_ ];
