@@ -45,7 +45,11 @@ sub match {
 }
 
 sub routes {
-    my( $class, $routes ) = @_;
+    my $class = shift;
+    my $routes = $_[0];
+    if ( @_ > 1 ) {
+        $routes = [ @_ ];
+    }
     $class->__Routes( $routes );
 }
 

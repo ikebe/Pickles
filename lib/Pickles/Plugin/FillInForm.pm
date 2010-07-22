@@ -9,7 +9,7 @@ sub install {
         if ( $c->req->method eq 'POST' || $c->stash->{fdat} ) {
             $c->add_filter(sub {
                 my $body = shift;
-                my $q = $c->stash->{fdat} || $c->req->parameters;
+                my $q = $c->stash->{fdat} || $c->req;
                 HTML::FillInForm->fill( \$body, $q );
             });
         }
