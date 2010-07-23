@@ -1,0 +1,10 @@
+<html>
+<head>
+    <title>[% c.appname | html %]</title>
+</head>
+<body>
+<form method="post" action="[% c.uri_for('add') %]">
+Enter URL <input type="text" name="url" value="http://" style="width: 300px" /> <input type="submit" value="make!" />
+</form>
+</body>
+</html>
