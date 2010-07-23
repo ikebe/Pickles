@@ -206,7 +206,7 @@ sub redirect {
     $code ||= 302;
     $self->res->status( $code );
     $url = ($url =~ m{^https?://}) ? $url : $self->uri_for( $url );
-    $self->res->headers( Location => $url );
+    $self->res->headers->header(Location => $url);
     $self->finished(1);
 }
 
