@@ -9,6 +9,7 @@ author_tests 'xt';
 
 build_requires 'Test::More';
 requires 'Plack' => '0.99';
+requires 'Module::Setup' => '0.09';
 requires 'Class::Data::Inheritable' => 0;
 requires 'Path::Router' => '0.06';
 

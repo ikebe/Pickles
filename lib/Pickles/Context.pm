@@ -3,7 +3,7 @@ use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
 use Plack::Util::Accessor qw(env stash finished);
-use Class::Trigger qw(pre_dispatch post_dispatch pre_render post_render pre_filter post_filter pre_finalize post_finalize);
+use Class::Trigger qw(pre_dispatch post_dispatch pre_filter post_filter pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 
 __PACKAGE__->mk_classdata(__registered_components => {});
@@ -108,7 +108,6 @@ sub match {
 
 sub render {
     my( $self, $view ) = @_;
-    $self->call_trigger('pre_render');
     $view ||= $self->view_class;
     unless ( ref $view ) {
         $view = $view->new;
@@ -116,7 +115,6 @@ sub render {
     $self->res->content_type( $view->content_type );
     my $body = $view->render( $self );
     $self->res->body( $body );
-    $self->call_trigger('post_render');
     $self->finished(1);
 }
 
@@ -131,9 +129,8 @@ sub dispatch {
         $self->not_found;
         return $self->res->finalize;
     }
-    my $args = $self->args;
     my $controller = $controller_class->new;
-    $controller->execute( $action, $self, $args );
+    $controller->execute( $action, $self );
     $self->call_trigger('post_dispatch');
     # return PSGI response.
     $self->finalize;
@@ -163,7 +160,7 @@ sub _prepare {
     $self->stash->{template} = $path;
 }
 
-sub apply_filters {
+sub _apply_filters {
     my $self = shift;
     $self->call_trigger('pre_filter');
     if ( @{$self->{filters}} ) {
@@ -182,7 +179,7 @@ sub finalize {
     unless ( $self->finished ) {
         $self->render;
     }
-    $self->apply_filters;
+    $self->_apply_filters;
     my $result = $self->res->finalize;
     $self->call_trigger('post_finalize');
     $result;

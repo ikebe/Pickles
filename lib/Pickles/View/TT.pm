@@ -6,6 +6,7 @@ use Data::Dumper;
 
 my $tt;
 
+__PACKAGE__->config( TEMPLATE_EXTENSION => '.html' );
 sub new {
     my $class = shift;
     my $self = bless {}, $class;
@@ -19,7 +20,6 @@ sub render {
         ENCODING => 'utf8',
         UNICODE => 1,
         ABSOLUTE => 1,
-        TEMPLATE_EXTENSION => '.html',
         INCLUDE_PATH => [
             $c->config->path_to('view'),
             $c->config->path_to('view', 'inc'),
