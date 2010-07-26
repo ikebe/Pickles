@@ -136,22 +136,6 @@ sub dispatch {
     $self->finalize;
 }
 
-sub not_found {
-    my $c = shift;
-    $c->res->content_type('text/html');
-    $c->res->body(<<'HTML');
-<html>
-<head>
-<title>404 Not Found</title>
-</head>
-<body>
-<h1>404 File Not Found</h1>
-</body>
-</html>
-HTML
-    
-}
-
 sub _prepare {
     my $self = shift;
     my $path = $self->req->path_info;
@@ -200,6 +184,22 @@ sub uri_for {
     $uri;
 }
 
+sub not_found {
+    my $self = shift;
+    $self->res->content_type('text/html');
+    $self->res->status( 404 );
+    $self->res->body(<<'HTML');
+<html>
+<head>
+<title>404</title>
+</head>
+<body>
+<h1>404 File Not Found</h1>
+</body>
+</html>
+HTML
+    $self->finished(1);
+}
 
 sub redirect {
     my( $self, $url, $code ) = @_;

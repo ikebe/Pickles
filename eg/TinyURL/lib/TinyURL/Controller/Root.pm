@@ -19,6 +19,9 @@ sub go {
     my( $self, $c ) = @_;
     my $id = $c->args->{id};
     my $url = $c->get('DB')->lookup( $id );
+    unless ( $url ) {
+        return $c->not_found;
+    }
     $c->redirect( $url );
 }
 
