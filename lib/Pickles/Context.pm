@@ -175,11 +175,15 @@ sub uri_for {
     my $uri = $req->uri;
     my $params =
         ( scalar @args && ref $args[$#args] eq 'HASH' ? pop @args : {} );
-    my $path = ( $args[0] =~ m{^/} ) ? shift @args : $uri->path;
-    my @path_segments = grep { $_ } map {
-        split /\//, $_
-    } ($path, @args);
-    $uri->path_segments( @path_segments );
+    if ( $args[0] =~ m{^/} ) {
+        $uri->path( join '/', @args );
+    }
+    else {
+        my @path_segments = grep { $_ } map {
+            split /\//, $_
+        } ($uri->path, @args);
+        $uri->path_segments( @path_segments );
+    }
     $uri->query_form( %$params ) if $params;
     $uri;
 }
