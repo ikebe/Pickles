@@ -26,7 +26,10 @@ sub render {
         ],
         %{$config},
     });
-    my $template = $c->stash->{template}. $config->{TEMPLATE_EXTENSION};
+    my $template = $c->stash->{template};
+    unless ( $template =~ /$config->{TEMPLATE_EXTENSION}$/ ) {
+        $template .= $config->{TEMPLATE_EXTENSION};
+    }
     $tt->process( $template, {
         %{$c->stash},
         c => $c,

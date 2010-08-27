@@ -5,7 +5,7 @@ use warnings;
 use parent 'Pickles::View::TT';
 
 __PACKAGE__->config({
-    TEMPLATE_EXTENSION => '.tmpl',
+    TEMPLATE_EXTENSION => '.html',
     VARIABLES => {
         foo => 'bar',
     },
