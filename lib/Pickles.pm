@@ -9,15 +9,17 @@ __END__
 
 =head1 NAME
 
-Pickles -
+Pickles - tiny web application framework
 
 =head1 SYNOPSIS
 
-  use Pickles;
+  % pickles-setup MyApp
+  % cd MyApp
+  % plackup -I./lib app.psgi
 
 =head1 DESCRIPTION
 
-Pickles is
+Pickles is a tiny web application framework, which is based upon Plack.
 
 =head1 AUTHOR
 

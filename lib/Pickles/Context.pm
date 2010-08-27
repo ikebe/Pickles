@@ -172,7 +172,7 @@ sub finalize {
 sub uri_for {
     my( $self, @args ) = @_;
     my $req = $self->req;
-    my $uri = $req->uri;
+    my $uri = $req->uri->clone;
     my $params =
         ( scalar @args && ref $args[$#args] eq 'HASH' ? pop @args : {} );
     if ( $args[0] =~ m{^/} ) {
@@ -271,3 +271,48 @@ sub view_class {
 1;
 
 __END__
+
+=head1 NAME
+
+Pickles::Context - Pickles context class.
+
+=head1 SYNOPSIS
+
+ package MyApp::Context;
+ 
+ use strict;
+ use warnings;
+ use parent 'Pickles::Context';
+ __PACKAGE__->load_plugins(qw(Encode));
+  
+ 1;
+ 
+ __END__
+
+=head1 METHODS
+
+=head2 $c->request, $c->req
+
+returns a L<Pickles::Request> object.
+
+=head2 $c->response, $c->res
+
+returns a L<Pickles::Response> object.
+
+=head2 $c->uri_for( @path, \%query );
+
+construct absolute uri of the @path.
+\%query values are treat as QUERY_STRING.
+
+=head1 AUTHOR
+
+Tomohiro Ikebe E<lt>ikebe {at} livedoor.jpE<gt>
+
+=head1 SEE ALSO
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
