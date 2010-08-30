@@ -4,7 +4,7 @@ use Encode;
 
 sub install {
     my( $class, $pkg ) = @_;
-    $pkg->add_trigger(pre_dispatch => sub {
+    $pkg->add_trigger( pre_dispatch => sub {
         my $c = shift;
         my $config = $c->config->{'Plugin::Encode'};
         my $ie = $config->{input_encoding} || 'utf-8';

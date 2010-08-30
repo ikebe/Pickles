@@ -5,6 +5,7 @@ use Plack::Util;
 use Plack::Util::Accessor qw(env stash finished);
 use Class::Trigger qw(pre_dispatch post_dispatch pre_filter post_filter pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
+use Scalar::Util qw(blessed);
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
@@ -106,11 +107,14 @@ sub match {
 }
 
 sub render {
-    my( $self, $view ) = @_;
-    $view ||= $self->view_class;
-    unless ( ref $view ) {
-        $view = $view->new;
+    my( $self, $view_class ) = @_;
+    if ( $view_class ) {
+        $view_class = Plack::Util::load_class( $view_class, $self->appname );
     }
+    else {
+        $view_class = $self->view_class;
+    }
+    my $view = $view_class->new;
     $self->res->content_type( $view->content_type );
     my $body = $view->render( $self );
     $self->res->body( $body );

@@ -2,7 +2,6 @@ package Pickles::View::MicroTemplate;
 use strict;
 use base qw(Pickles::View);
 use Text::MicroTemplate::Extended;
-use Encode;
 
 __PACKAGE__->config( extension => '.mt' );
 
