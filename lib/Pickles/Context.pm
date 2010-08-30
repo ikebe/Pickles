@@ -8,7 +8,6 @@ use String::CamelCase qw(camelize);
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
-__PACKAGE__->mk_classdata(__dispatcher => undef);
 
 sub register {
     my( $class, $name, $component ) = @_;

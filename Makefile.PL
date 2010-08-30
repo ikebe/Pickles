@@ -2,18 +2,16 @@ use inc::Module::Install;
 name 'Pickles';
 all_from 'lib/Pickles.pm';
 
-# requires '';
-
 tests 't/*.t';
-author_tests 'xt';
+#author_tests 'xt';
 
 build_requires 'Test::More';
 requires 'Plack' => '0.99';
 requires 'Module::Setup' => '0.09';
-requires 'Class::Data::Inheritable' => 0;
-requires 'Router::Simple' => 0;
+requires 'Class::Data::Inheritable';
+requires 'Router::Simple';
 requires 'String::CamelCase';
-requires 'UNIVERSAL::require' => 0;
+requires 'UNIVERSAL::require';
 
 install_script 'script/pickles-setup';
 

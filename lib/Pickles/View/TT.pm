@@ -7,6 +7,7 @@ use Data::Dumper;
 my $tt;
 
 __PACKAGE__->config( TEMPLATE_EXTENSION => '.html' );
+
 sub new {
     my $class = shift;
     my $self = bless {}, $class;

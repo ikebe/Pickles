@@ -4,6 +4,8 @@ use base qw(Pickles::View);
 use Text::MicroTemplate::Extended;
 use Encode;
 
+__PACKAGE__->config( extension => '.mt' );
+
 sub new {
     my $class = shift;
     my $self = bless {}, $class;
@@ -18,7 +20,6 @@ sub render {
         c => $c,
     );
     my $mt = Text::MicroTemplate::Extended->new(
-#        extension => '.html',
         include_path => [
             $c->config->path_to('view'),
             $c->config->path_to('view', 'inc'),
