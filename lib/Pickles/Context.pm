@@ -222,12 +222,10 @@ sub controller_class {
     my $match = $self->match;
     my $controller = $match->{controller};
     return unless $controller;
-    my $class = eval {
-        Plack::Util::load_class(
-            'Controller::'. camelize( $match->{controller} ), 
-            $self->appname
-        );
-    };
+    my $class = Plack::Util::load_class(
+        'Controller::'. camelize( $controller ), 
+        $self->appname
+    );
     $class;
 }
 
