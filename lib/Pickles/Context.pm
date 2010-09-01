@@ -187,7 +187,7 @@ sub uri_for {
         } ($uri->path, @args);
         $uri->path_segments( @path_segments );
     }
-    $uri->query_form( %$params ) if $params;
+    $uri->query_form( $params );
     $uri;
 }
 

@@ -11,6 +11,16 @@ sub foo {
     my( $self, $c ) = @_;
 }
 
+sub redirect {
+    my( $self, $c ) = @_;
+    $c->redirect( '/' );
+}
+
+sub redirect2 {
+    my( $self, $c ) = @_;
+    $c->redirect( 'http://search.cpan.org/' );
+}
+
 1;
 
 __END__

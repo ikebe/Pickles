@@ -10,9 +10,13 @@ sub new {
 
 sub execute {
     my( $self, $name, $c ) = @_;
-    $self->call_trigger( 'pre_action', $c );
-    $self->$name( $c );
-    $self->call_trigger( 'post_action', $c );
+    if ( my $code = $self->can( $name ) ) {
+        $self->call_trigger( 'pre_action', $c );
+        $code->( $self, $c );
+        $self->call_trigger( 'post_action', $c );
+        return 1;
+    }
+    return ;
 }
 
 1;
