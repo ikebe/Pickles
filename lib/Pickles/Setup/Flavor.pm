@@ -59,7 +59,6 @@ template: |
   author_tests 'xt';
   
   build_requires 'Test::More';
-  use_test_base;
   auto_include;
   WriteAll;
 ---
@@ -81,6 +80,7 @@ template: |
   ^t/perlcritic
   ^tools/
   \.svn/
+  \.git/
   ^[^/]+\.yaml$
   ^[^/]+\.pl$
   ^\.shipit$
@@ -187,7 +187,7 @@ file: lib/____var-module_path-var____/Dispatcher.pm
 template: |
   package [% module %]::Dispatcher;
   use strict;
-  use base qw(Pickles::Dispatcher);
+  use parent qw(Pickles::Dispatcher);
   
   __PACKAGE__->routes([
       '/' => { controller => 'Root', action => 'index' } 
