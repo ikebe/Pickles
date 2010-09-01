@@ -128,15 +128,12 @@ sub dispatch {
     my $controller_class = $self->controller_class;
     my $action = $self->action;
     unless ( $controller_class && defined $action ) {
-        $self->res->code( 404 );
-        $self->not_found;
-        return $self->res->finalize;
+        return $self->handle_not_found;
     }
     my $controller = $controller_class->new;
     $controller->execute( $action, $self );
     $self->call_trigger('post_dispatch');
-    # return PSGI response.
-    $self->finalize;
+    return $self->finalize;
 }
 
 sub _prepare {
@@ -191,10 +188,17 @@ sub uri_for {
     $uri;
 }
 
+sub handle_not_found {
+    my $self = shift;
+    $self->res->status( 404 );
+    $self->not_found;
+    $self->finished(1);
+    $self->res->finalize;
+}
+
 sub not_found {
     my $self = shift;
     $self->res->content_type('text/html');
-    $self->res->status( 404 );
     $self->res->body(<<'HTML');
 <html>
 <head>
@@ -205,7 +209,6 @@ sub not_found {
 </body>
 </html>
 HTML
-    $self->finished(1);
 }
 
 sub redirect {
