@@ -5,7 +5,7 @@ use parent 'Pickles::Controller';
 
 sub view {
     my( $self, $c ) = @_;
-    $c->stash->{template} = 'item/view.html';
+    $c->stash->{'VIEW_TEMPLATE'} = 'item/view.html';
     my $args = $c->args;
     $c->stash->{id} = $args->{id};
 }

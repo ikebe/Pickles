@@ -30,6 +30,8 @@ template: |+2
   my $config = [% module %]::Config->instance;
   
   builder {
+      # enable 'Session';
+      # enable 'LogDispatch', logger => Log::Dispatch->new( Log::Dispatch::Screen->new( stderr => 1, min_level => 'debug', name => 'screen' ));
       enable 'Static',
           path => qr{\.(jpg|gif|png|css|js|ico)$}, root => $config->path_to('htdocs');
       $app;

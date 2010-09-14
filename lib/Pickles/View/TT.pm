@@ -26,7 +26,7 @@ sub render {
         ],
         %{$config},
     });
-    my $template = $c->stash->{template};
+    my $template = $c->stash->{'VIEW_TEMPLATE'};
     unless ( $template =~ /$config->{TEMPLATE_EXTENSION}$/ ) {
         $template .= $config->{TEMPLATE_EXTENSION};
     }

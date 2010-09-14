@@ -21,7 +21,7 @@ sub render {
         ],
         %{$config},
     );
-    my $template = $c->stash->{template};
+    my $template = $c->stash->{'VIEW_TEMPLATE'};
     my $suffix = $tx->{suffix};
     unless ( $template =~ /$suffix$/ ) {
         $template .= $suffix;

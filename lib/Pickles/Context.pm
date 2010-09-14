@@ -2,7 +2,7 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished);
+use Plack::Util::Accessor qw(env stash finished controller);
 use Class::Trigger qw(pre_dispatch post_dispatch pre_filter post_filter pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Scalar::Util qw(blessed);
@@ -60,6 +60,7 @@ sub add_method {
 sub new {
     my( $class, $env ) = @_;
     my $self = bless { 
+        controller => undef,
         stash => +{},
         filters => [],
         env => $env,
@@ -124,13 +125,14 @@ sub render {
 sub dispatch {
     my $self = shift;
     $self->_prepare;
-    $self->call_trigger('pre_dispatch');
     my $controller_class = $self->controller_class;
     my $action = $self->action;
     unless ( $controller_class && defined $action ) {
         return $self->handle_not_found;
     }
     my $controller = $controller_class->new;
+    $self->{controller} = $controller;
+    $self->call_trigger('pre_dispatch');
     $controller->execute( $action, $self );
     $self->call_trigger('post_dispatch');
     return $self->finalize;
@@ -141,7 +143,7 @@ sub _prepare {
     my $path = $self->req->path_info;
     $path .= 'index' if $path =~ m{/$};
     $path =~ s{^/}{};
-    $self->stash->{template} = $path;
+    $self->stash->{'VIEW_TEMPLATE'} = $path;
 }
 
 sub _apply_filters {

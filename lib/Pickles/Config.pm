@@ -18,9 +18,15 @@ sub _load {
     my $self = bless {}, $class;
     (my $appname = $class) =~ s/::Config$//;
     $self->{appname} = $appname;
+    $self->{ACTION_PREFIX} = '';
     $self->setup_home;
     $self->load_config;
     $self;
+}
+
+sub get {
+    my( $self, $key, $default ) = @_;
+    return defined $self->{$key} ? $self->{$key} : $default;
 }
 
 sub setup_home {
@@ -54,8 +60,8 @@ sub load_config {
             %{$conf},
         );
     }
-    $self->{__files} = $files;
-    $self->{__time} = time;
+    $self->{__FILES} = $files;
+    $self->{__TIME} = time;
     for my $key( keys %config ) {
         $self->{$key} = $config{$key};
     }

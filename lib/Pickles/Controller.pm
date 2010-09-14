@@ -9,9 +9,13 @@ sub new {
 }
 
 sub execute {
-    my( $self, $name, $c ) = @_;
+    my( $self, $action, $c ) = @_;
+    my $config = $c->config;
+    if ( my $prefix = $config->{'ACTION_PREFIX'} ) {
+        $action = $prefix. $action;
+    }
     $self->call_trigger( 'pre_action', $c );
-    $self->$name( $c );
+    $self->$action( $c );
     $self->call_trigger( 'post_action', $c );
     return 1;
 }

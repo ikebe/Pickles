@@ -26,7 +26,7 @@ sub render {
         %{$config},
         template_args => \%args,
     );
-    my $template = $c->stash->{template};
+    my $template = $c->stash->{'VIEW_TEMPLATE'};
     # $body is-a Text::MicroTemplate::EncodedString
     my $body = $mt->render( $template );
     (ref $body && $body->can('as_string')) ? $body->as_string : $body;
