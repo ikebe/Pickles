@@ -1,9 +1,11 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 12;
+use Test::More tests => 13;
 use lib "./t/MyApp/lib";
 use MyApp;
+
+my $tested = 0;
 
 # TT view
 SKIP:
@@ -20,6 +22,7 @@ SKIP:
                 like $res->content, qr{Foo/Bar}, 'check content';
                 like $res->content, qr{MyApp - Template}, 'check content';
                 like $res->content, qr{var1}, 'check content';
+                $tested++;
             } ;
 }
 
@@ -38,6 +41,7 @@ SKIP:
                 like $res->content, qr{Foo/Bar}, 'check content';
                 like $res->content, qr{MyApp - MicroTemplate}, 'check content';
                 like $res->content, qr{var1}, 'check content';
+                $tested++;
             } ;
 }
 
@@ -56,5 +60,8 @@ SKIP:
                 like $res->content, qr{Foo/Bar}, 'check content';
                 like $res->content, qr{MyApp - Xslate}, 'check content';
                 like $res->content, qr{var1}, 'check content';
+                $tested++;
             } ;
 }
+
+ok $tested, "Tested $tested view types. Make sure to install at least one of Template-Toolkit, Text::MicroTemplate::Extended, or Text::Xslate";
