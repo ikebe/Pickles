@@ -12,6 +12,7 @@ requires 'Class::Data::Inheritable';
 requires 'Router::Simple';
 requires 'String::CamelCase';
 requires 'UNIVERSAL::require';
+requires 'Class::Trigger';
 requires 'Text::MicroTemplate::Extended';
 
 install_script 'script/pickles-setup';
