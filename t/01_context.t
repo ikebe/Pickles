@@ -1,8 +1,8 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 7;
 use lib "./t/MyApp/lib";
+use Test::More;
 use MyApp::Context;
 use HTTP::Request;
 use HTTP::Response;
@@ -22,3 +22,13 @@ is $c->uri_for('bar'), 'http://localhost/foo/bar', 'uri_for';
 is $c->uri_for('/hoge'), 'http://localhost/hoge', 'uri_for';
 is $c->uri_for('bar', 'baz', { q => 'Query' }), 'http://localhost/foo/bar/baz?q=Query', 'uri_for';
 
+$c->register( foo => sub {
+    ok (@_, "Arguments are passed");
+    ok ($_[0], "First argument is valid");
+    isa_ok ($_[0], "MyApp::Context");
+    return "bar";
+} );
+
+is $c->get( 'foo' ), "bar", "context->get('foo') returns 'bar'";
+
+done_testing();

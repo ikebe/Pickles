@@ -22,7 +22,7 @@ sub get {
     return $self->{__components}{$name} if $self->{__components}{$name};
     my $component = $self->__registered_components->{$name};
     if ( ref($component) eq 'CODE' ) {
-        $self->{__components}{$name} = $component->();
+        $self->{__components}{$name} = $component->($self);
     }
     else {
         $self->{__components}{$name} = $component;
