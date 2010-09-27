@@ -5,5 +5,8 @@
 <body>
 <h1>Foo</h1>
 <div>[% var %]</div>
+<form method="POST" action="[% c.uri_for('/foo') %]">
+<input type="text" name="q" />
+</form>
 </body>
 </html>

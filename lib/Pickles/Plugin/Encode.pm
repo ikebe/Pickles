@@ -18,7 +18,7 @@ sub install {
             $c->req->parameters->add( $key => @values );
         }
     });
-    $pkg->add_trigger( post_filter => sub {
+    $pkg->add_trigger( pre_finalize => sub {
         my( $c ) = @_;
         if ( $c->res->content_type =~ m{^text/} ) {
             my $body = $c->res->body;

@@ -2,7 +2,7 @@ use inc::Module::Install;
 name 'Pickles';
 all_from 'lib/Pickles.pm';
 
-tests 't/*.t';
+tests 't/*.t t/plugin/*.t';
 #author_tests 'xt';
 
 build_requires 'Test::More';

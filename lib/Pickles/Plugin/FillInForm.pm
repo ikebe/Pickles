@@ -4,14 +4,15 @@ use HTML::FillInForm;
 
 sub install {
     my( $class, $pkg ) = @_;
-    $pkg->add_trigger( pre_filter => sub {
+    $pkg->add_trigger( post_render => sub {
         my( $c ) = @_;
         if ( $c->req->method eq 'POST' || $c->stash->{fdat} ) {
-            $c->add_filter(sub {
-                my $body = shift;
+            if ( $c->res->content_type =~ m{^text/x?html}) {
+                my $body = $c->res->body;
                 my $q = $c->stash->{fdat} || $c->req;
-                HTML::FillInForm->fill( \$body, $q );
-            });
+                my $result = HTML::FillInForm->fill( \$body, $q );
+                $c->res->body( $result );
+            }
         }
     });
 }

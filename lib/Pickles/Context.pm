@@ -3,9 +3,11 @@ use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
 use Plack::Util::Accessor qw(env stash finished controller);
-use Class::Trigger qw(pre_dispatch post_dispatch pre_filter post_filter pre_finalize post_finalize);
+use Class::Trigger qw(pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Scalar::Util qw(blessed);
+use Carp qw(croak);
+use Try::Tiny;
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
@@ -62,7 +64,6 @@ sub new {
     my $self = bless { 
         controller => undef,
         stash => +{},
-        filters => [],
         env => $env,
         __components => {},
         finished => 0,
@@ -132,11 +133,23 @@ sub dispatch {
     }
     my $controller = $controller_class->new;
     $self->{controller} = $controller;
-    $self->call_trigger('pre_dispatch');
-    $controller->execute( $action, $self );
-    $self->call_trigger('post_dispatch');
+    try {
+        $self->call_trigger('pre_dispatch');
+        $controller->execute( $action, $self );
+        $self->call_trigger('post_dispatch');
+        unless ( $self->finished ) {
+            $self->call_trigger('pre_render');
+            $self->render;
+            $self->call_trigger('post_render');
+        }
+    }
+    catch {
+        croak $_ if /^PICKLES_EXCEPTION_ABORT/
+    };
     return $self->finalize;
 }
+
+sub abort { die 'PICKLES_EXCEPTION_ABORT'; }
 
 sub _prepare {
     my $self = shift;
@@ -146,26 +159,9 @@ sub _prepare {
     $self->stash->{'VIEW_TEMPLATE'} = $path;
 }
 
-sub _apply_filters {
-    my $self = shift;
-    $self->call_trigger('pre_filter');
-    if ( @{$self->{filters}} ) {
-        my $body = $self->res->body;
-        for my $filter( @{$self->{filters}} ) {
-            $body = $filter->( $body, $self );
-        }
-        $self->res->body( $body );
-    }
-    $self->call_trigger('post_filter');
-}
-
 sub finalize {
     my $self = shift;
     $self->call_trigger('pre_finalize');
-    unless ( $self->finished ) {
-        $self->render;
-    }
-    $self->_apply_filters;
     my $result = $self->res->finalize;
     $self->call_trigger('post_finalize');
     $result;
@@ -244,11 +240,6 @@ sub args {
     my $self = shift;
     my $match = $self->match;
     $match->{args};
-}
-
-sub add_filter {
-    my( $self, $code ) = @_;
-    push @{$self->{filters}}, $code;
 }
 
 sub request_class {
