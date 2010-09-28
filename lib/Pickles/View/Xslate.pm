@@ -13,14 +13,17 @@ sub new {
 
 sub render {
     my( $self, $c ) = @_;
-    my $config = $self->merge_config( $c );
-    $tx ||= Text::Xslate->new(
-        path => [
-            $c->config->path_to('view'),
-            $c->config->path_to('view', 'inc'),
-        ],
-        %{$config},
-    );
+    my $tx = $self->{xslate};
+    if (! $tx) {
+        my $config = $self->merge_config( $c );
+        $tx = $self->{xslate} = Text::Xslate->new(
+            path => [
+                $c->config->path_to('view'),
+                $c->config->path_to('view', 'inc'),
+            ],
+            %{$config},
+        );
+    }
     my $template = $c->stash->{'VIEW_TEMPLATE'};
     my $suffix = $tx->{suffix};
     unless ( $template =~ /$suffix$/ ) {
