@@ -8,6 +8,8 @@ __PACKAGE__->routes([
     '/foo/bar' => { controller => 'Foo', action => 'bar' },
     '/redirect' => { controller => 'Root', action => 'redirect' },
     '/redirect2' => { controller => 'Root', action => 'redirect2' },
+    '/redirect2' => { controller => 'Root', action => 'redirect2' },
+    '/redirect_and_abort' => { controller => 'Root', action => 'redirect_and_abort' },
 ]);
 
 __PACKAGE__->connect( 

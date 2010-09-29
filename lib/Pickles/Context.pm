@@ -144,7 +144,7 @@ sub dispatch {
         }
     }
     catch {
-        croak $_ if /^PICKLES_EXCEPTION_ABORT/
+        croak $_ unless /^PICKLES_EXCEPTION_ABORT/
     };
     return $self->finalize;
 }
