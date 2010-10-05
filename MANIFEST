@@ -1,3 +1,4 @@
+.gitignore
 Changes
 docs/README.txt
 eg/TinyURL/app.psgi
@@ -49,6 +50,7 @@ lib/Pickles/Util.pm
 lib/Pickles/View.pm
 lib/Pickles/View/MicroTemplate.pm
 lib/Pickles/View/TT.pm
+lib/Pickles/View/Xslate.pm
 lib/Pickles/WebApp.pm
 Makefile.PL
 MANIFEST			This list of files
@@ -67,23 +69,32 @@ t/MyApp/htdocs/DUMMY
 t/MyApp/lib/MyApp.pm
 t/MyApp/lib/MyApp/Config.pm
 t/MyApp/lib/MyApp/Context.pm
+t/MyApp/lib/MyApp/Controller/Foo.pm
 t/MyApp/lib/MyApp/Controller/Item.pm
 t/MyApp/lib/MyApp/Controller/Root.pm
 t/MyApp/lib/MyApp/Dispatcher.pm
 t/MyApp/lib/MyApp/Model/Test.pm
 t/MyApp/lib/MyApp/Plugin/Test.pm
 t/MyApp/lib/MyApp/View.pm
+t/MyApp/lib/MyApp/View/MT.pm
+t/MyApp/lib/MyApp/View/Xslate.pm
 t/MyApp/Makefile.PL
 t/MyApp/MANIFEST.SKIP
 t/MyApp/README
 t/MyApp/t/00_compile.t
 t/MyApp/view/foo.html
+t/MyApp/view/foo/bar.html
+t/MyApp/view/foo/bar.mt
+t/MyApp/view/foo/bar.tx
 t/MyApp/view/index.html
 t/MyApp/view/item/view.html
 t/MyApp/xt/01_podspell.t
 t/MyApp/xt/02_perlcritic.t
 t/MyApp/xt/03_pod.t
 t/MyApp/xt/perlcriticrc
+t/plugin/00_plugin.t
+t/plugin/01_encode.t
+t/plugin/02_fillinform.t
 xt/01_podspell.t
 xt/02_perlcritic.t
 xt/03_pod.t
