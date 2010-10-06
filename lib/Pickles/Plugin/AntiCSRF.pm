@@ -1,23 +1,31 @@
 package Pickles::Plugin::AntiCSRF;
 use strict;
 use String::Random qw(random_regex);
+use Carp ();
 
 sub install {
     my( $class, $pkg ) = @_;
-    my $token_name = $pkg->config->{'Plugin::AntiCSRF'}->{token_name} || '_token';
-    my $token_length = $pkg->config->{'Plugin::AntiCSRF'}->{token_length} || 8;
+    my $config = $pkg->config->{'Plugin::AntiCSRF'};
+    my $token_name = $config->{token_name} || '_token';
     $pkg->add_trigger( post_render => sub {
         my $c = shift;
+        unless ( $c->has_plugin('Session') ) {
+            Carp::croak('You MUST load Pickles::Plugin::Session!');
+        }
+        my $length = $c->config->{'Plugin::AntiCSRF'}->{token_length} || 8;
         my $body = $c->res->body;
-        my $token = ($c->req->session->{$token_name} ||= random_regex("[a-zA-Z0-9_]{$token_length}"));
+        my $token = 
+            $c->session->get( $token_name ) || random_regex("[a-zA-Z0-9_]{$length}");
         $body =~ s{</form>}{<input type="hidden" name="$token_name" value="$token" /></form>}ig;
         $c->res->body( $body );
+        $c->session->set( $token_name => $token );
     } );
     $pkg->add_trigger( pre_dispatch => sub {
         my $c = shift;
         if ( $c->req->method eq 'POST' && !$c->stash->{skip_csrf_check} ) {
-            my $token = $c->req->param( $token_name );
-            unless ( $token && $token eq $c->req->session->{$token_name} ) {
+            my $req_val = $c->req->param( $token_name );
+            my $session_val = $c->session->get( $token_name );
+            unless ( $req_val && $session_val && ($req_val eq $session_val) ) {
                 $c->detect_csrf;
             }
         }
