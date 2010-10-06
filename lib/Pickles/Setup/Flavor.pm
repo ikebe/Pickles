@@ -18,7 +18,7 @@ Pickles::Setup::Flavor - pack from Pickles::Setup::Flavor
 __DATA__
 
 ---
-file: app.psgi
+file: ____var-dist-var____.psgi
 template: |+2
   
   use strict;
