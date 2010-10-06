@@ -2,7 +2,7 @@
 use strict;
 use Plack::Test;
 use lib "./t/MyApp/lib";
-use Test::More tests => 1;
+use Test::More tests => 2;
 use MyApp::Context;
 use HTTP::Request;
 use HTTP::Response;
@@ -17,3 +17,4 @@ my $c = MyApp::Context->new( $env );
 $c->dispatch;
 
 ok(utf8::is_utf8($c->req->param('q')));
+ok(!utf8::is_utf8($c->res->body));

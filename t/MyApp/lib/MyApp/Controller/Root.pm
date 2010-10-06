@@ -29,6 +29,18 @@ sub redirect_and_abort {
     die 'XXX'; 
 }
 
+sub form {
+    my( $self, $c ) = @_;
+}
+
+sub count {
+    my( $self, $c ) = @_;
+    my $count = $c->session->get('count');
+    $c->session->set( count => ++$count );
+    $c->stash->{count} = $count;
+}
+
+
 1;
 
 __END__

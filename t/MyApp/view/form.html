@@ -1,0 +1,12 @@
+<html>
+<head>
+    <title>[% c.appname | html %]</title>
+</head>
+<body>
+
+<form method="POST" action="[% c.uri_for('/form') %]">
+<input type="text" name="text" value="" /> <input type="submit" value="POST" />
+</form>
+
+</body>
+</html>

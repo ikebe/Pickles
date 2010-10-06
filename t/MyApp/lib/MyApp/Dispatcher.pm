@@ -10,6 +10,8 @@ __PACKAGE__->routes([
     '/redirect2' => { controller => 'Root', action => 'redirect2' },
     '/redirect2' => { controller => 'Root', action => 'redirect2' },
     '/redirect_and_abort' => { controller => 'Root', action => 'redirect_and_abort' },
+    '/form' => { controller => 'Root', action => 'form' },
+    '/count' => { controller => 'Root', action => 'count' },
 ]);
 
 __PACKAGE__->connect( 
