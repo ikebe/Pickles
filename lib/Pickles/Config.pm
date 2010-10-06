@@ -54,7 +54,19 @@ sub load_config {
     my $files = $self->get_config_files;
     my %config;
     for my $file( @{$files} ) {
-        my $conf = do $file;
+        my $pkg = $file;
+        $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
+        my $config_pkg = sprintf <<'SANDBOX', ref $self, $pkg;
+package %s::%s;
+sub __path_to {
+    $self->path_to(@_);
+}
+{
+    my $conf = do $file or die $!;
+    $conf;
+}
+SANDBOX
+        my $conf = eval $config_pkg || +{};
         %config = (
             %config,
             %{$conf},
