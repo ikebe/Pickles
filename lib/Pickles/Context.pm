@@ -3,7 +3,7 @@ use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
 use Plack::Util::Accessor qw(env stash finished controller);
-use Class::Trigger qw(pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
+use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Scalar::Util qw(blessed);
 use Carp qw(croak);
@@ -68,6 +68,7 @@ sub new {
         __components => {},
         finished => 0,
     }, $class;
+    $self->call_trigger('init');
     $self;
 }
 
