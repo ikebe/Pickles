@@ -17,7 +17,7 @@ else {
     plan tests => 5;
 }
 
-
+$ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session AntiCSRF FillInForm));
 
 # fail
