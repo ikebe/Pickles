@@ -12,6 +12,13 @@ sub install {
         unless ( $c->has_plugin('Session') ) {
             Carp::croak('You MUST load Pickles::Plugin::Session!');
         }
+
+        if ($c->res->content_type !~ /html$/i) {
+            # no need to waste time parsing the body if this is not
+            # an HTML document
+            return;
+        }
+
         my $length = $c->config->{'Plugin::AntiCSRF'}->{token_length} || 8;
         my $body = $c->res->body;
         my $token = 
