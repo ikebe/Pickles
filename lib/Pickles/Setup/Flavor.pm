@@ -22,9 +22,13 @@ file: ____var-dist-var____.psgi
 template: |+2
   
   use strict;
+  use File::Spec;
+  use File::Basename;
+  use lib File::Spec->catdir( dirname(__FILE__), 'lib' );
+
+  use Plack::Builder;
   use [% module %];
   use [% module %]::Config;
-  use Plack::Builder;
   
   my $app = [% module %]->handler;
   my $config = [% module %]::Config->instance;
