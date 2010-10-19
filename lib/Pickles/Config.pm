@@ -53,14 +53,25 @@ sub load_config {
     my $self = shift;
     my $files = $self->get_config_files;
     my %config;
+
+    # In 5.8.8 at least, putting $self in an evaled code produces
+    # extra warnings (and possibly break the behavior of __path_to)
+    # so we create a private closure, and plant the closure into
+    # the generated packes
+    my $path_to = sub { $self->path_to(@_) };
+
     for my $file( @{$files} ) {
         my $pkg = $file;
         $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
-        my $config_pkg = sprintf <<'SANDBOX', ref $self, $pkg;
-package %s::%s;
-sub __path_to {
-    $self->path_to(@_);
-}
+
+        my $fqname = sprintf '%s::%s', ref $self, $pkg;
+        { # XXX This is where we plant that closure
+            no strict 'refs';
+            *{"$fqname\::__path_to"} = $path_to;
+        }
+
+        my $config_pkg = sprintf <<'SANDBOX', $fqname;
+package %s;
 {
     my $conf = do $file or die $!;
     $conf;
