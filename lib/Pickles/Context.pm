@@ -117,7 +117,11 @@ sub render {
     else {
         $view_class = $self->view_class;
     }
-    my $view = $view_class->new;
+
+    my $view = $self->get( "_$view_class" );
+    if (! $view) {
+        $self->register( "_$view_class" => ($view = $view_class->new));
+    }
     $self->res->content_type( $view->content_type );
     my $body = $view->render( $self );
     $self->res->body( $body );
@@ -132,7 +136,11 @@ sub dispatch {
     unless ( $controller_class && defined $action ) {
         return $self->handle_not_found;
     }
-    my $controller = $controller_class->new;
+    my $controller = $self->get( "_$controller_class" );
+    if (! $controller) {
+        $self->register( "_$controller_class" => ($controller = $controller_class->new));
+    }
+
     $self->{controller} = $controller;
     try {
         $self->call_trigger('pre_dispatch');
