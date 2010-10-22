@@ -4,7 +4,7 @@
 </head>
 <body>
 <h1>Foo</h1>
-<div>[% var %]</div>
+[% c.req.param('q') %]
 <form method="POST" action="[% c.uri_for('/foo') %]">
 <input type="text" name="q" />
 </form>
