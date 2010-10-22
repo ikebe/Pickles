@@ -24,9 +24,7 @@ sub install {
             my $body = $c->res->body;
             my $config = $c->config->{'Plugin::Encode'};
             my $oe = $config->{output_encoding} || 'utf-8';
-            if ( Encode::is_utf8($body) ) {
-                $c->res->body( Encode::encode( $oe, $body ) );
-            }
+            $c->res->body( Encode::encode( $oe, $body ) );
         }
     });
 }
