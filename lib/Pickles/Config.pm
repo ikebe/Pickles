@@ -62,6 +62,9 @@ sub load_config {
     my $path_to = sub { $self->path_to(@_) };
 
     for my $file( @{$files} ) {
+        # only do this if the file exists
+        next unless -f $file;
+
         my $pkg = $file;
         $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
 
@@ -135,3 +138,15 @@ sub path_to {
 1;
 
 __END__
+
+=head1 NAME
+
+Pickles::Config - Config Object
+
+=head1 SYNOPSIS
+
+    use MyApp::Config;
+    my $config = MyApp::Config->instance;
+    my $component = $config->get( $component_name );
+
+=item

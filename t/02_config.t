@@ -1,7 +1,7 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 14;
+use Test::More tests => 17;
 use lib "./t/MyApp/lib";
 use MyApp::Config;
 use Scalar::Util qw(refaddr);
@@ -33,7 +33,9 @@ use Scalar::Util qw(refaddr);
 $MyApp::Config::_instance = undef;
 {
     # Check that both MYAPP_CONFIG and MYAPP_ENV are respected
-    $ENV{'MYAPP_CONFIG'} = 't/foo.pl';
+    use Cwd ();
+    use File::Spec;
+    $ENV{'MYAPP_CONFIG'} = File::Spec->catfile(Cwd::cwd(), 't', '02_config_foo.pl');
     $ENV{'MYAPP_ENV'} = 'test';
 
     my ($config, $buffer);
@@ -42,8 +44,26 @@ $MyApp::Config::_instance = undef;
         open STDERR, '>', \$buffer;
         $config = MyApp::Config->instance;
     }
-    like $buffer, qr/foo\.pl: No such file or directory/;
-    like $buffer, qr/foo_test\.pl: No such file or directory/;
+
+    isa_ok( $config, 'MyApp::Config' );
+    is @{$config->{__FILES}}, 3;
+}
+
+$MyApp::Config::_instance = undef;
+{
+    $ENV{'MYAPP_CONFIG'} = File::Spec->catfile(Cwd::cwd(), 't', '02_config_bar.pl');
+    $ENV{'MYAPP_ENV'} = 'test';
+
+    my ($config, $buffer);
+    {
+        local *STDERR;
+        open STDERR, '>', \$buffer;
+        $config = MyApp::Config->instance;
+    }
+    if (ok $buffer) {
+        like $buffer, qr/02_config_bar\.pl: Bogus error/;
+        like $buffer, qr/02_config_bar_test\.pl: Bogus error/;
+    }
 
     isa_ok( $config, 'MyApp::Config' );
     is @{$config->{__FILES}}, 3;
