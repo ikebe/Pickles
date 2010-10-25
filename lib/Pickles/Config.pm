@@ -1,5 +1,6 @@
 package Pickles::Config;
 use strict;
+use File::Spec;
 use Path::Class;
 use Plack::Util::Accessor qw(appname home);
 use Pickles::Util qw(env_value);
@@ -67,6 +68,7 @@ sub load_config {
         my $fqname = sprintf '%s::%s', ref $self, $pkg;
         { # XXX This is where we plant that closure
             no strict 'refs';
+            no warnings 'redefine';
             *{"$fqname\::__path_to"} = $path_to;
         }
 
@@ -78,6 +80,9 @@ package %s;
 }
 SANDBOX
         my $conf = eval $config_pkg || +{};
+        if ($@) {
+            warn "Error while trying to read config file $file: $@";
+        }
         %config = (
             %config,
             %{$conf},
@@ -96,17 +101,28 @@ sub get_config_files {
     my @files;
     my $base = $self->path_to('config.pl');
     push @files, $base if -e $base;
-    if ( my $config_file = env_value('CONFIG', $self->appname) ) {
-        if ( $config_file =~ m{^/} ) {
-            push @files, $config_file;
+
+    my $myconfig_file;
+    if ( $myconfig_file = env_value('CONFIG', $self->appname) ) {
+        if ( $myconfig_file !~ m{^/} ) {
+            $myconfig_file = $self->path_to( $myconfig_file );
         }
-        else {
-            push @files, $self->path_to( $config_file );
-        }
+        push @files, $myconfig_file;
     }
     if ( my $env = env_value('ENV', $self->appname) ) {
-        my $filename = sprintf 'config_%s.pl', $env;
-        push @files, $self->path_to( $filename );
+        my $template;
+        if (! $myconfig_file) {
+            $template = 'config_%s.pl';
+        } else {
+            my ($v, $d, $file) = File::Spec->splitpath( $myconfig_file );
+            $file =~ s/(\.[^\.]+)?$/$1 ? "_%s$1" : "%s"/e;
+            $template = File::Spec->catpath( $v, $d, $file );
+        }
+        my $filename = sprintf $template, $env;
+        if ( $filename !~ m{^/}) {
+            $filename = $self->path_to( $filename );
+        }
+        push @files, $filename;
     }
     return \@files;
 }
