@@ -118,7 +118,8 @@ sub render {
         $view_class = $self->view_class;
     }
 
-    my $view = $self->get( "_$view_class" );
+    my $view;
+    try { $view = $self->get( "_$view_class" ) };
     if (! $view) {
         $self->register( "_$view_class" => ($view = $view_class->new));
     }
@@ -136,7 +137,8 @@ sub dispatch {
     unless ( $controller_class && defined $action ) {
         return $self->handle_not_found;
     }
-    my $controller = $self->get( "_$controller_class" );
+    my $controller;
+    try { $controller = $self->get( "_$controller_class" ) };
     if (! $controller) {
         $self->register( "_$controller_class" => ($controller = $controller_class->new));
     }
