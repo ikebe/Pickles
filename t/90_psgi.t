@@ -2,7 +2,6 @@
 use strict;
 use Plack::Test;
 use Test::More tests => 10;
-use lib "./t/MyApp/lib";
 use MyApp;
 
 # Index

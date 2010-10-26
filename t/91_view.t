@@ -2,7 +2,6 @@
 use strict;
 use Plack::Test;
 use Test::More tests => 13;
-use lib "./t/MyApp/lib";
 use MyApp;
 
 my $tested = 0;

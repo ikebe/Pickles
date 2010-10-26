@@ -1,7 +1,6 @@
 
 use strict;
 use Plack::Test;
-use lib "./t/MyApp/lib";
 use Test::More;
 use MyApp::Context;
 use HTTP::Request;

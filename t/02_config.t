@@ -2,7 +2,6 @@
 use strict;
 use Plack::Test;
 use Test::More tests => 17;
-use lib "./t/MyApp/lib";
 use MyApp::Config;
 use Scalar::Util qw(refaddr);
 
