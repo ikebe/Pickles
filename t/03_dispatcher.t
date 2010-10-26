@@ -8,7 +8,7 @@ use HTTP::Request;
 use HTTP::Response;
 use HTTP::Message::PSGI;
 
-my $dispatcher = MyApp::Dispatcher->instance;
+my $dispatcher = MyApp::Dispatcher->new( file => 't/MyApp/etc/routes.pl' );
 isa_ok( $dispatcher, 'MyApp::Dispatcher' );
 
 {

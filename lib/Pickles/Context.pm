@@ -2,7 +2,8 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished controller);
+use Plack::Util::Accessor qw(env stash finished controller dispatcher);
+use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Scalar::Util qw(blessed);
@@ -68,7 +69,32 @@ sub new {
         __components => {},
         finished => 0,
     }, $class;
+
+    my $file = Pickles::Util::env_value('ROUTES', $self->appname );
+    if (! $file) {
+        $file = $self->config->path_to( 'etc/routes.pl' );
+    }
+
+    $self->dispatcher( $self->dispatcher_class->new( file => $file ) );
+
+    # preload controller classes
+    my $routes = $self->dispatcher->router->{routes};
+    if ($routes) {
+        my %seen;
+        foreach my $route (@$routes) {
+            my $dest = $route->dest;
+            my $controller = $dest->{controller};
+            if (! $controller) {
+                warn "No controller specified for path " . $route->pattern;
+            }
+
+            next if $seen{ $controller }++;
+            Plack::Util::load_class( "Controller::" . camelize($controller), $self->appname );
+        }
+    }
+
     $self->call_trigger('init');
+
     $self;
 }
 
@@ -105,7 +131,7 @@ sub config {
 
 sub match {
     my $self = shift;
-    my $dispatcher = $self->dispatcher_class->instance;
+    my $dispatcher = $self->dispatcher;
     $self->{_match} ||= $dispatcher->match( $self->req );
 }
 

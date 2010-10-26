@@ -1,33 +1,29 @@
 package Pickles::Dispatcher;
 use strict;
 use Router::Simple;
-use base qw(Class::Data::Inheritable);
 use Carp ();
 
-__PACKAGE__->mk_classdata('__Routes');
+sub new {
+    my ($class, %args) = @_;
 
-sub instance {
-    my $class = shift;
-    return $class if ref $class;
-    no strict 'refs';
-    my $instance = \${ "$class\::_instance" };
-    defined $$instance ? $$instance : ($$instance = $class->_init);
+    my $file = $args{file} || Carp::croak("No file given to $class->new");
+    my $pkg = $file;
+    $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
+
+    my $fqname = sprintf '%s::%s', $class, $pkg;
+    my $router_pkg = sprintf <<'SANDBOX', $fqname;
+package %s;
+use Router::Simple::Declare;
+{
+    my $conf = do $file or die $!;
+    $conf;
 }
-
-sub _init {
-    my $class = shift;
-    my $self = bless {}, $class;
-    my $router = Router::Simple->new;
-    my @routes = @{$class->__Routes};
-    while ( @routes ) {
-        my( $path, @rule ) = splice( @routes, 0, 2 );
-        if (ref $rule[0] eq 'ARRAY') {
-            @rule = @{$rule[0]};
-        }
-        $router->connect( $path, @rule );
+SANDBOX
+    my $router = eval $router_pkg;
+    if (! eval { $router->isa( 'Router::Simple' ) } || $@ ) {
+        Carp::croak("file $args{file} returned something other than Router::Simple");
     }
-    $self->{router} = $router;
-    $self;
+    bless { router => $router }, $class;
 }
 
 sub router {
@@ -45,26 +41,6 @@ sub match {
     }
     $match->{args} = \%args;
     $match;
-}
-
-sub routes {
-    my $class = shift;
-    return $class->__Routes unless @_;
-    my $routes = $_[0];
-    if ( @_ > 1 ) {
-        $routes = [ @_ ];
-    }
-    $class->__Routes( $routes );
-}
-
-sub connect {
-    my $class = shift;
-    unless ( @_ == 2 ) {
-        Carp::croak("Odd number of parameters: @_");
-    }
-    my $routes = $class->__Routes;
-    push @{$routes}, @_;
-    $class->__Routes( $routes );
 }
 
 1;
