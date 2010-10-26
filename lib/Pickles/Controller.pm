@@ -14,9 +14,9 @@ sub execute {
     if ( my $prefix = $config->{'ACTION_PREFIX'} ) {
         $action = $prefix. $action;
     }
-    $self->call_trigger( 'pre_action', $c );
+    $self->call_trigger( 'pre_action', $c, $action );
     $self->$action( $c );
-    $self->call_trigger( 'post_action', $c );
+    $self->call_trigger( 'post_action', $c, $action );
     return 1;
 }
 
