@@ -189,17 +189,18 @@ template: |+
   1;
   
   __END__
-
+---
+file: etc/routes.pl
+template: |+
+  router {
+      connect '/' => { controller => 'Root', action => 'index' };
+  };
 ---
 file: lib/____var-module_path-var____/Dispatcher.pm
 template: |
   package [% module %]::Dispatcher;
   use strict;
   use parent qw(Pickles::Dispatcher);
-  
-  __PACKAGE__->routes([
-      '/' => { controller => 'Root', action => 'index' } 
-  ]);
   
   1;
   
