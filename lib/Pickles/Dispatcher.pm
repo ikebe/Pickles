@@ -20,8 +20,11 @@ sub _init {
     my $router = Router::Simple->new;
     my @routes = @{$class->__Routes};
     while ( @routes ) {
-        my( $path, $rule ) = splice( @routes, 0, 2 );
-        $router->connect( $path, $rule );
+        my( $path, @rule ) = splice( @routes, 0, 2 );
+        if (ref $rule[0] eq 'ARRAY') {
+            @rule = @{$rule[0]};
+        }
+        $router->connect( $path, @rule );
     }
     $self->{router} = $router;
     $self;

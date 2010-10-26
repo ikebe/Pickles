@@ -6,6 +6,7 @@ __PACKAGE__->routes([
     '/' => { controller => 'Root', action => 'index' },
     '/foo' => { controller => 'Root', action => 'foo' },
     '/foo/bar' => { controller => 'Foo', action => 'bar' },
+    '/foo/post' => [ { controller => 'Foo', action => 'post', }, { method => 'POST' } ],
     '/redirect' => { controller => 'Root', action => 'redirect' },
     '/redirect2' => { controller => 'Root', action => 'redirect2' },
     '/redirect2' => { controller => 'Root', action => 'redirect2' },

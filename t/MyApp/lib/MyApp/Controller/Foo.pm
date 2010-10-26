@@ -11,6 +11,14 @@ sub bar {
     } 
 }
 
+sub post {
+    my( $self, $c ) = @_;
+    my $res = $c->res;
+    $res->content_type('text/plain');
+    $res->body( 'method was ' . $c->req->method );
+    $c->finished(1);
+}
+
 1;
 
 __END__

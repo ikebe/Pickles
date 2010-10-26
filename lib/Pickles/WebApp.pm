@@ -14,6 +14,9 @@ sub handler {
         for my $i (0..(@$routes/2 - 1)) {
             my $path = $routes->[$i * 2];
             my $config = $routes->[$i * 2 + 1];
+            if (ref $config eq 'ARRAY') {
+                $config = $config->[0];
+            }
             my $controller = $config->{controller};
             if (! $controller) {
                 warn "No controller specified for path $path";
