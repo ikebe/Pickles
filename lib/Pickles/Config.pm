@@ -152,5 +152,42 @@ Pickles::Config - Config Object
     use MyApp::Config;
     my $config = MyApp::Config->instance;
     my $component = $config->get( $component_name );
+    my $path = $config->path_to( $subpath, ... );
 
-=item
+=head1 FILES
+
+=over 4
+
+=item etc/config.pl 
+
+This file is always read, and will be read first. Use it to populate
+sane defaults for your app
+
+=item config.pl
+
+This file is read after etc/config.pl, and is read only for backwards
+compatibility. THIS FEATURE WILL BE REMOVED IN THE FUTURE.
+
+=item MYAPP_ENV
+
+If you set the environment variable MYAPP_ENV, Pickles will go and read
+a config file named using that term. For example, if you set MYAPP_ENV to be
+C<'test'>, then it Pickles will attemp to read C<'config_test.pl'>.
+
+NOTE: The name 'MYAPP_ENV' should be changed according to your app name. For example, If you built a Pickles app named Foo::Bar, then the environment variable that you want to set is FOO_BAR_ENV, not MYAPP_ENV
+
+NOTE: The filename that this environment affects also dependson the value of MYAPP_CONFIG. See below.
+
+=item MYAPP_CONFIG
+
+If you set the environment variable MYAPP_CONFIG, Pickles will go and read
+that file. Use this to specify an alternate config file.
+
+NOTE: The name 'MYAPP_CONFIG' should be changed according to your app name. For example, If you built a Pickles app named Foo::Bar, then the environment variable that you want to set is FOO_BAR_CONFIG, not MYAPP_CONFIG
+
+This value is subsequently use in the MYAPP_ENV. For example, if you set
+MYAPP_CONFIG to be C<'foo.pl'>, then setting MYAPP_ENV to C<'test'> will trigger Pickles to read foo_test.pl, not config_test.pl
+
+=back
+
+=cut
