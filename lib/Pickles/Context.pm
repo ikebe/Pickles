@@ -2,7 +2,7 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished controller dispatcher);
+use Plack::Util::Accessor qw(env stash finished controller);
 use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
@@ -12,6 +12,7 @@ use Try::Tiny;
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
+__PACKAGE__->mk_classdata(__dispatcher => undef);
 
 sub register {
     my( $class, $name, $component ) = @_;
@@ -69,16 +70,21 @@ sub new {
         __components => {},
         finished => 0,
     }, $class;
+    $self->call_trigger('init');
+    $self;
+}
 
-    my $file = Pickles::Util::env_value('ROUTES', $self->appname );
+sub setup {
+    my $class = shift;
+    my $file = Pickles::Util::env_value('ROUTES', $class->appname );
     if (! $file) {
-        $file = $self->config->path_to( 'etc/routes.pl' );
+        $file = $class->config->path_to( 'etc/routes.pl' );
     }
 
-    $self->dispatcher( $self->dispatcher_class->new( file => $file ) );
+    $class->__dispatcher( $class->dispatcher_class->new( file => $file ) );
 
     # preload controller classes
-    my $routes = $self->dispatcher->router->{routes};
+    my $routes = $class->__dispatcher->router->{routes};
     if ($routes) {
         my %seen;
         foreach my $route (@$routes) {
@@ -89,13 +95,9 @@ sub new {
             }
 
             next if $seen{ $controller }++;
-            Plack::Util::load_class( "Controller::" . camelize($controller), $self->appname );
+            Plack::Util::load_class( "Controller::" . camelize($controller), $class->appname );
         }
     }
-
-    $self->call_trigger('init');
-
-    $self;
 }
 
 sub appname {
@@ -131,7 +133,7 @@ sub config {
 
 sub match {
     my $self = shift;
-    my $dispatcher = $self->dispatcher;
+    my $dispatcher = $self->__dispatcher;
     $self->{_match} ||= $dispatcher->match( $self->req );
 }
 
