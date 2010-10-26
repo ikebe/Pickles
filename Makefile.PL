@@ -22,8 +22,7 @@ modules first:
 
     * Module::Install
     * Module::Install::AuthorTests
-    * Module::Install::ReadmeFromPod
-    * Module::Install::XSUtil
+    * Module::Install::TestTarget
 
 and try again.
 EOM
