@@ -12,6 +12,7 @@ my $msetup = Module::Setup->new;
 $msetup->setup_options;
 $msetup->options->{direct} = 1;
 $msetup->options->{flavor_class} = '+Pickles::Setup::Flavor';
+$msetup->options->{pickles_version} = $Pickles::VERSION;
 {
     no warnings 'redefine';
     *Module::Setup::_load_flavor_class = sub { 'Pickles::Setup::Flavor' };

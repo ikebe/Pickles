@@ -3,6 +3,8 @@ package Pickles::Setup::Flavor;
 use strict;
 use warnings;
 use base 'Module::Setup::Flavor';
+use Pickles;
+
 1;
 
 =head1
@@ -58,11 +60,13 @@ template: |
   all_from 'lib/[% module_path %].pm';
   
   # requires '';
+
+  requires 'Pickles' => [% config.pickles_version %];
   
   tests 't/*.t';
   author_tests 'xt';
   
-  build_requires 'Test::More';
+  test_requires 'Test::More';
   auto_include;
   WriteAll;
 ---
