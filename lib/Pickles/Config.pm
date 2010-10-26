@@ -63,7 +63,7 @@ sub load_config {
 
     for my $file( @{$files} ) {
         # only do this if the file exists
-        next unless -f $file;
+        next unless -e $file;
 
         my $pkg = $file;
         $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
@@ -102,8 +102,12 @@ SANDBOX
 sub get_config_files {
     my $self = shift;
     my @files;
-    my $base = $self->path_to('config.pl');
-    push @files, $base if -e $base;
+
+    my @base_files = ( File::Spec->catfile('etc', 'config.pl'), 'config.pl' );
+    foreach my $f (@base_files) {
+        my $base = $self->path_to($f);
+        push @files, $base if -e $base;
+    }
 
     my $myconfig_file;
     if ( $myconfig_file = env_value('CONFIG', $self->appname) ) {
@@ -115,7 +119,7 @@ sub get_config_files {
     if ( my $env = env_value('ENV', $self->appname) ) {
         my $template;
         if (! $myconfig_file) {
-            $template = 'config_%s.pl';
+            $template = File::Spec->catfile('etc', 'config_%s.pl');
         } else {
             my ($v, $d, $file) = File::Spec->splitpath( $myconfig_file );
             $file =~ s/(\.[^\.]+)?$/$1 ? "_%s$1" : "%s"/e;

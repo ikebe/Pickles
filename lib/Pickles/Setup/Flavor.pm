@@ -50,7 +50,7 @@ template: |
   0.01    [% localtime %]
           - original version
 ---
-file: config.pl
+file: etc/config.pl
 template: "\nreturn +{};\n\n"
 ---
 file: Makefile.PL
