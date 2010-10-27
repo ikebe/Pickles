@@ -22,8 +22,6 @@ sub register {
         );
 
         $self->components->{ $name } = \%data;
-        push @{$self->per_request_components}, $name;
-        
     } else {
         my $h = $self->__persistent();
         if (! $h) {
