@@ -30,4 +30,6 @@ $c->register( foo => sub {
 
 is $c->get( 'foo' ), "bar", "context->get('foo') returns 'bar'";
 
+is $c->appname, "MyApp";
+
 done_testing();
