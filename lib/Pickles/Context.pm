@@ -13,6 +13,7 @@ __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 __PACKAGE__->mk_classdata(__dispatcher => undef);
 __PACKAGE__->mk_classdata(__config => undef);
+__PACKAGE__->mk_classdata(__appname => undef);
 
 sub register {
     my( $class, $name, $component ) = @_;
@@ -116,9 +117,21 @@ sub config {
 
 sub appname {
     my $self = shift;
-    my $pkg = ref $self ? ref $self : $self;
-    $pkg =~ s/::Context$//;
-    $pkg;
+    my $appname = $self->__appname();
+    if ($appname) {
+        return $appname;
+    }
+
+    if ($appname = $ENV{PICKLES_APPNAME}) {
+        $self->__appname($appname);
+        return $appname;
+    }
+
+    $appname = ref $self ? ref $self : $self;
+    $appname =~ s/::Context$//;
+
+    $self->__appname($appname);
+    $appname;
 }
 
 sub request {
