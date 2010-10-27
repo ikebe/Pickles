@@ -3,13 +3,33 @@ use strict;
 use base qw(Class::Data::Inheritable);
 
 __PACKAGE__->mk_classdata( __persistent => undef );
+__PACKAGE__->mk_classdata( __components => undef );
 
 sub new {
     my $class = shift;
     bless {
-        components => {},
         objects    => {},
     }, $class;
+}
+
+sub objects { $_[0]->{objects} }
+
+sub components {
+    my $self = shift;
+    my $h = $self->__components();
+    if (! $h) {
+        $self->__components($h = {});
+    }
+    return $h;
+}
+
+sub persistent_objects {
+    my $self = shift;
+    my $h = $self->__persistent_objects();
+    if (! $h) {
+        $self->__persistent_objects($h = {});
+    }
+    return $h;
 }
 
 sub register {
@@ -20,25 +40,15 @@ sub register {
             %$opts,
             initialzer => $component,
         );
-
         $self->components->{ $name } = \%data;
     } else {
-        my $h = $self->__persistent();
-        if (! $h) {
-            $self->__persistent($h = {});
-        }
-        $h->{$name} = $component;
+        $self->persistent_objects->{$name} = $component;
     }
 }
 
 sub get {
     my ($self, $name, @args) = @_;
-    my $h = $self->__persistent();
-    if (! $h) {
-        $self->__persistent($h = {});
-    }
-    my $object = $h->{$name};
-
+    my $object = $self->persisntent_objects->{$name};
     if (! $object) {
         $object = $self->construct_object($name, @args);
         if ($object) {
