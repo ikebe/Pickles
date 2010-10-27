@@ -1,11 +1,13 @@
 package Pickles::Container;
 use strict;
+use base qw(Class::Data::Inheritable);
+
+__PACKAGE__->mk_classdata( __persistent => undef );
 
 sub new {
     my $class = shift;
     bless {
         components => {},
-        per_request_components => {},
         objects    => {},
     }, $class;
 }
@@ -23,13 +25,22 @@ sub register {
         push @{$self->per_request_components}, $name;
         
     } else {
-        $self->{objects}->{$name} = $component;
+        my $h = $self->__persistent();
+        if (! $h) {
+            $self->__persistent($h = {});
+        }
+        $h->{$name} = $component;
     }
 }
 
 sub get {
     my ($self, $name, @args) = @_;
-    my $object = $self->objects->{$name};
+    my $h = $self->__persistent();
+    if (! $h) {
+        $self->__persistent($h = {});
+    }
+    my $object = $h->{$name};
+
     if (! $object) {
         $object = $self->construct_object($name, @args);
         if ($object) {
@@ -47,15 +58,6 @@ sub construct_object {
     }
 
     $data->{initializer}->( @args );
-}
-
-sub clear_per_request {
-    my $self = shift;
-
-    my $objects = $self->objects;
-    foreach my $name (@{ $self->per_request_components }) {
-        delete $objects->{ $name };
-    }
 }
 
 1;
