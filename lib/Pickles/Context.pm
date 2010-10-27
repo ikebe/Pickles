@@ -9,29 +9,68 @@ use String::CamelCase qw(camelize);
 use Scalar::Util qw(blessed);
 use Carp qw(croak);
 use Try::Tiny;
+use Object::Container;
+our $CURRENT_CONTEXT; # DON'T USE
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 __PACKAGE__->mk_classdata(__dispatcher => undef);
+__PACKAGE__->mk_classdata('__per_request_components');
+__PACKAGE__->mk_classdata('__container');
+
+sub container {
+    my $class = shift;
+    my $container = $class->__container();
+    if (! $container) {
+        $class->__container( $container = Object::Container->new() );
+    }
+    return $container;
+}
+
+sub register_per_instance {
+    my ($class, $name, $component) = @_;
+    my $list = $class->__per_request_components;
+    if (! $list) {
+        $class->__per_request_components($list = []);
+    }
+    push @$list, $name;
+    $class->register($name, $component);
+}
 
 sub register {
-    my( $class, $name, $component ) = @_;
-    # register class.
-    Plack::Util::load_class( $component ) unless ref $component;
-    $class->__registered_components->{$name} = $component;
+    my $class = shift;
+    my $container = $class->container;
+    if (@_ == 2) {
+        if (blessed $_[1]) {
+            my ($name, $object) = @_;
+            $container->register($name, sub { $object });
+        } elsif (ref $_[1] eq 'CODE') {
+            my ($name, $code) = @_;
+            $container->register($name, sub { $code->($CURRENT_CONTEXT) });
+        } else {
+            $container->regsiter(@_);
+        }
+    } else {
+        $container->register(@_);
+    }
+}
+
+sub clear_per_request_components {
+    my $class = shift;
+    my $container = $class->container;
+    my $list = $class->__per_request_components;
+    if (! $list) {
+        $class->__per_request_components($list = []);
+    }
+    foreach my $name (@$list) {
+        $container->remove($name);
+    }
 }
 
 sub get {
     my( $self, $name ) = @_;
-    return $self->{__components}{$name} if $self->{__components}{$name};
-    my $component = $self->__registered_components->{$name};
-    if ( ref($component) eq 'CODE' ) {
-        $self->{__components}{$name} = $component->($self);
-    }
-    else {
-        $self->{__components}{$name} = $component;
-    }
-    $self->{__components}{$name};
+    local $CURRENT_CONTEXT = $self;
+    return $self->container->get( $name );
 }
 
 sub load_plugins {
@@ -70,6 +109,7 @@ sub new {
         __components => {},
         finished => 0,
     }, $class;
+    $self->clear_per_request_components();
     $self->call_trigger('init');
     $self;
 }
