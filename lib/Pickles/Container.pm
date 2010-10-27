@@ -50,17 +50,21 @@ sub get {
     my ($self, $name, @args) = @_;
     my $object = $self->persisntent_objects->{$name};
     if (! $object) {
-        $object = $self->construct_object($name, @args);
+        my $data = $self->components->{ $name };
+        $object = $self->_construct_object($data, @args);
         if ($object) {
-            $self->objects->{$name} = $object;
+            if ($data->{persistent}) {
+                $self->persistent_objects->{$name} = $object;
+            } else {
+                $self->objects->{$name} = $object;
+            }
         }
     }
     return $object;
 }
 
-sub construct_object {
-    my ($self, $name, @args) = @_;
-    my $data = $self->components->{$name};
+sub _construct_object {
+    my ($self, $data, @args) = @_;
     if (! $data) {
         return ();
     }
