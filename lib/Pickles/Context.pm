@@ -76,7 +76,6 @@ sub new {
 
 sub get_routes_file {
     my $class = shift;
-    $class->__config( $class->config_class->new );
     my $file = Pickles::Util::env_value('ROUTES', $class->appname );
     if (! $file) {
         $file = $class->config->path_to( 'etc/routes.pl' );
@@ -86,6 +85,9 @@ sub get_routes_file {
 
 sub setup {
     my $class = shift;
+
+    $class->__config( $class->config_class->new );
+
     my $file = $class->get_routes_file();
     $class->__dispatcher( $class->dispatcher_class->new( file => $file ) );
 
