@@ -74,13 +74,18 @@ sub new {
     $self;
 }
 
-sub setup {
+sub get_routes_file {
     my $class = shift;
     my $file = Pickles::Util::env_value('ROUTES', $class->appname );
     if (! $file) {
         $file = $class->config->path_to( 'etc/routes.pl' );
     }
+    return $file;
+}
 
+sub setup {
+    my $class = shift;
+    my $file = $class->get_routes_file();
     $class->__dispatcher( $class->dispatcher_class->new( file => $file ) );
 
     # preload controller classes
