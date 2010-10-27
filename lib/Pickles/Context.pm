@@ -6,13 +6,13 @@ use Plack::Util::Accessor qw(env stash finished controller);
 use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
-use Scalar::Util qw(blessed);
 use Carp qw(croak);
 use Try::Tiny;
 
 __PACKAGE__->mk_classdata(__registered_components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 __PACKAGE__->mk_classdata(__dispatcher => undef);
+__PACKAGE__->mk_classdata(__config => undef);
 
 sub register {
     my( $class, $name, $component ) = @_;
@@ -76,6 +76,7 @@ sub new {
 
 sub get_routes_file {
     my $class = shift;
+    $class->__config( $class->config_class->new );
     my $file = Pickles::Util::env_value('ROUTES', $class->appname );
     if (! $file) {
         $file = $class->config->path_to( 'etc/routes.pl' );
@@ -105,6 +106,12 @@ sub setup {
     }
 }
 
+sub config {
+    my $class = shift;
+    $class->setup unless defined $class->__config;
+    $class->__config;
+}
+
 sub appname {
     my $self = shift;
     my $pkg = ref $self ? ref $self : $self;
@@ -129,12 +136,6 @@ sub response {
     };
 }
 sub res { shift->response(@_); }
-
-# class method
-sub config {
-    my $self = shift;
-    $self->config_class->instance;
-}
 
 sub match {
     my $self = shift;

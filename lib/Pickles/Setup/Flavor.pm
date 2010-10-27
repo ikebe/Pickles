@@ -33,7 +33,7 @@ template: |+2
   use [% module %]::Config;
   
   my $app = [% module %]->handler;
-  my $config = [% module %]::Config->instance;
+  my $config = [% module %]::Config->new;
   
   builder {
       enable 'Static',

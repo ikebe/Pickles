@@ -19,10 +19,10 @@ else {
 
 $ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session AntiCSRF FillInForm));
-
+my $app = MyApp->handler;
 # fail
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( POST => 'http://localhost/form' );
@@ -34,7 +34,7 @@ my $token;
 my $cookie;
 # get token
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/form' );
@@ -48,7 +48,7 @@ test_psgi
 
 # success
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $content = "_token=${token}";

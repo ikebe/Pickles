@@ -1,10 +1,10 @@
 .gitignore
 Changes
 docs/README.md
-docs/README.txt
 eg/TinyURL/app.psgi
 eg/TinyURL/Changes
-eg/TinyURL/config.pl
+eg/TinyURL/etc/config.pl
+eg/TinyURL/etc/routes.pl
 eg/TinyURL/htdocs/DUMMY
 eg/TinyURL/lib/TinyURL.pm
 eg/TinyURL/lib/TinyURL/Config.pm
@@ -70,13 +70,12 @@ t/02_config_bar_test.pl
 t/02_config_foo.pl
 t/02_config_foo_test.pl
 t/03_dispatcher.t
-t/50_plugin.t
 t/MyApp/app.psgi
 t/MyApp/Changes
-t/MyApp/config.pl
 t/MyApp/etc/config.pl
 t/MyApp/etc/config_session.pl
 t/MyApp/etc/config_test.pl
+t/MyApp/etc/routes.pl
 t/MyApp/htdocs/DUMMY
 t/MyApp/lib/MyApp.pm
 t/MyApp/lib/MyApp/Config.pm

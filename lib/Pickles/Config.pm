@@ -5,22 +5,16 @@ use Path::Class;
 use Plack::Util::Accessor qw(appname home);
 use Pickles::Util qw(env_value);
 
-sub instance {
+sub new {
     my $class = shift;
-    return $class if ref $class;
-    no strict 'refs';
-    my $instance = \${ "$class\::_instance" };
-    defined $$instance ? $$instance : ($$instance = $class->_load);
-}
-
-
-sub _load {
-    my $class = shift;
+    my %args = @_;
     my $self = bless {}, $class;
     (my $appname = $class) =~ s/::Config$//;
     $self->{appname} = $appname;
+    $self->setup_home( $args{home} );
+    $self->{env} = $args{env} || env_value('ENV', $self->appname);
+    $self->{base} = $args{base} || env_value('CONFIG', $self->appname);
     $self->{ACTION_PREFIX} = '';
-    $self->setup_home;
     $self->load_config;
     $self;
 }
@@ -31,12 +25,11 @@ sub get {
 }
 
 sub setup_home {
-    my $self = shift;
-    if ( my $home = env_value('HOME', $self->appname) ) { # MYAPP_HOME
-        $self->{home} = dir( $home );
-    }
-    elsif ($ENV{'PICKLES_HOME'}) {
-        $self->{home} = dir( $ENV{'PICKLES_HOME'} );
+    my( $self, $home ) = @_;
+    my $dir = 
+        $home || env_value( 'HOME', $self->appname ) || $ENV{'PICKLES_HOME'};
+    if ( $dir ) {
+        $self->{home} = dir( $dir );
     }
     else {
         my $class = ref $self;
@@ -103,33 +96,34 @@ sub get_config_files {
     my $self = shift;
     my @files;
 
-    my @base_files = ( File::Spec->catfile('etc', 'config.pl'), 'config.pl' );
-    foreach my $f (@base_files) {
-        my $base = $self->path_to($f);
-        push @files, $base if -e $base;
+    if ( $self->{base} ) {
+        if ( $self->{base} !~ m{^/} ) {
+            $self->{base} = $self->path_to( $self->{base} );
+        }
+        push @files, $self->{base};
     }
+    else {
+        my @base_files = ( File::Spec->catfile('etc', 'config.pl'), 'config.pl' );
+        foreach my $f (@base_files) {
+            my $base = $self->path_to($f);
+            push @files, $base if -e $base;
+        }
+    }
+    
+    if ( my $env = $self->{env} ) {
+        my @env_files;
+        for my $file( @files ) {
+            my ($v, $d, $fname) = File::Spec->splitpath( $file );
+            $fname =~ s/(\.[^\.]+)?$/$1 ? "_%s$1" : "%s"/e;
+            my $template = File::Spec->catpath( $v, $d, $fname );
+            my $filename = sprintf $template, $env;
+            if ( $filename !~ m{^/}) {
+                $filename = $self->path_to( $filename );
+            }
+            push @env_files, $filename;
 
-    my $myconfig_file;
-    if ( $myconfig_file = env_value('CONFIG', $self->appname) ) {
-        if ( $myconfig_file !~ m{^/} ) {
-            $myconfig_file = $self->path_to( $myconfig_file );
         }
-        push @files, $myconfig_file;
-    }
-    if ( my $env = env_value('ENV', $self->appname) ) {
-        my $template;
-        if (! $myconfig_file) {
-            $template = File::Spec->catfile('etc', 'config_%s.pl');
-        } else {
-            my ($v, $d, $file) = File::Spec->splitpath( $myconfig_file );
-            $file =~ s/(\.[^\.]+)?$/$1 ? "_%s$1" : "%s"/e;
-            $template = File::Spec->catpath( $v, $d, $file );
-        }
-        my $filename = sprintf $template, $env;
-        if ( $filename !~ m{^/}) {
-            $filename = $self->path_to( $filename );
-        }
-        push @files, $filename;
+        push @files, @env_files;
     }
     return \@files;
 }
@@ -150,7 +144,7 @@ Pickles::Config - Config Object
 =head1 SYNOPSIS
 
     use MyApp::Config;
-    my $config = MyApp::Config->instance;
+    my $config = MyApp::Config->new;
     my $component = $config->get( $component_name );
     my $path = $config->path_to( $subpath, ... );
 
