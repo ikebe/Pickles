@@ -19,9 +19,10 @@ else {
 $ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session));
 my $cookie;
+my $app = MyApp->handler;
 
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/count' );
@@ -33,7 +34,7 @@ test_psgi
     } ;
 
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/count' );

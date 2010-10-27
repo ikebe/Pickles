@@ -5,9 +5,8 @@ use TinyURL::Config;
 use String::Random;
 
 sub new {
-    my( $class ) = shift;
-    my $config = TinyURL::Config->instance;
-    my $dbh = DBI->connect( @{$config->{datasource}}, {
+    my( $class, @datasource ) = @_;
+    my $dbh = DBI->connect( @datasource, {
         RaiseError => 1,
     } ) or die $DBI::errstr;
     my $self = bless {

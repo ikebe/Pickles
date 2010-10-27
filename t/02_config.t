@@ -1,13 +1,13 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 17;
+use Test::More tests => 19;
 use MyApp::Config;
 use Scalar::Util qw(refaddr);
 
 {
     $ENV{'MYAPP_ENV'} = 'test';
-    my $config = MyApp::Config->instance;
+    my $config = MyApp::Config->new;
     
     isa_ok( $config, 'MyApp::Config' );
     is @{$config->{__FILES}}, 2;
@@ -24,12 +24,8 @@ use Scalar::Util qw(refaddr);
     # __path_to()
     like $config->get('tmp_dir'), qr{^/};
     
-    # singleton.
-    my $config2 = MyApp::Config->instance;
-    is refaddr($config), refaddr($config2), 'singleton';
 }
 
-$MyApp::Config::_instance = undef;
 {
     # Check that both MYAPP_CONFIG and MYAPP_ENV are respected
     use Cwd ();
@@ -41,14 +37,13 @@ $MyApp::Config::_instance = undef;
     {
         local *STDERR;
         open STDERR, '>', \$buffer;
-        $config = MyApp::Config->instance;
+        $config = MyApp::Config->new;
     }
 
     isa_ok( $config, 'MyApp::Config' );
-    is @{$config->{__FILES}}, 3;
+    is @{$config->{__FILES}}, 2;
 }
 
-$MyApp::Config::_instance = undef;
 {
     $ENV{'MYAPP_CONFIG'} = File::Spec->catfile(Cwd::cwd(), 't', '02_config_bar.pl');
     $ENV{'MYAPP_ENV'} = 'test';
@@ -57,7 +52,7 @@ $MyApp::Config::_instance = undef;
     {
         local *STDERR;
         open STDERR, '>', \$buffer;
-        $config = MyApp::Config->instance;
+        $config = MyApp::Config->new;
     }
     if (ok $buffer) {
         like $buffer, qr/02_config_bar\.pl: Bogus error/;
@@ -65,5 +60,16 @@ $MyApp::Config::_instance = undef;
     }
 
     isa_ok( $config, 'MyApp::Config' );
-    is @{$config->{__FILES}}, 3;
+    is @{$config->{__FILES}}, 2;
+}
+
+{
+    my $base = File::Spec->catfile(Cwd::cwd(), 't', '02_config_baz.pl');
+    my $config = MyApp::Config->new(
+        base => $base,
+        env => 'dev',
+    );
+    is $config->get('baz'), '1';
+    is $config->get('dev'), '1';
+    is @{$config->{__FILES}}, 2;
 }
