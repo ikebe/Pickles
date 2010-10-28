@@ -48,7 +48,9 @@ requires 'Router::Simple';
 requires 'String::CamelCase';
 requires 'UNIVERSAL::require';
 requires 'Class::Trigger';
-requires 'Text::MicroTemplate::Extended';
+
+requires 'Text::Xslate';
+requires 'Text::Xslate::Bridge::TT2Like';
 
 install_script 'script/pickles-setup';
 
