@@ -49,7 +49,7 @@ sub register {
 
 sub get {
     my ($self, $name, @args) = @_;
-    my $object = $self->persistent_objects->{$name};
+    my $object = $self->objects->{$name} || $self->persistent_objects->{$name};
     if (! $object) {
         my $data = $self->components->{ $name };
         $object = $self->_construct_object($data, @args);

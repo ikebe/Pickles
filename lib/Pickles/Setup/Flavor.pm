@@ -190,6 +190,18 @@ template: |+
   
   __END__
 ---
+file: lib/____var-module_path-var____/Container.pm
+template: |+
+  package [% module %]::Container;
+  
+  use strict;
+  use warnings;
+  use parent 'Pickles::Container';
+  
+  1;
+  
+  __END__
+---
 file: etc/routes.pl
 template: |+
   router {

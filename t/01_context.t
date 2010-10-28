@@ -21,15 +21,6 @@ is $c->uri_for('bar'), 'http://localhost/foo/bar', 'uri_for';
 is $c->uri_for('/hoge'), 'http://localhost/hoge', 'uri_for';
 is $c->uri_for('bar', 'baz', { q => 'Query' }), 'http://localhost/foo/bar/baz?q=Query', 'uri_for';
 
-$c->register( foo => sub {
-    ok (@_, "Arguments are passed");
-    ok ($_[0], "First argument is valid");
-    isa_ok ($_[0], "MyApp::Context");
-    return "bar";
-} );
-
-is $c->get( 'foo' ), "bar", "context->get('foo') returns 'bar'";
-
 is $c->appname, "MyApp";
 
 done_testing();

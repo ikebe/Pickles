@@ -3,6 +3,7 @@ use strict;
 use Path::Class;
 use UNIVERSAL::require;
 use base qw(Exporter);
+use Carp ();
 
 our @EXPORT_OK = qw(env_name env_value);
 
@@ -15,6 +16,18 @@ sub env_name {
 
 sub env_value {
     return $ENV{ env_name(@_) };
+}
+
+sub appname {
+    my $class = shift;
+    if (my $appname = $ENV{PICKLES_APPNAME}) {
+        return $appname;
+    }
+    if ( $class =~ m/^(.*?)::(Context|Config)$/ ) {
+        my $appname = $1;
+        return $appname;
+    }
+    Carp::croak("Could not determin APPNAME: $class");
 }
 
 1;

@@ -2,37 +2,35 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished controller);
+use Plack::Util::Accessor qw(env stash finished controller container);
 use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Carp qw(croak);
 use Try::Tiny;
 
-__PACKAGE__->mk_classdata(__registered_components => {});
+__PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 __PACKAGE__->mk_classdata(__dispatcher => undef);
 __PACKAGE__->mk_classdata(__config => undef);
-__PACKAGE__->mk_classdata(__appname => undef);
+__PACKAGE__->mk_classdata(setup_finished => 0);
+
+__PACKAGE__->mk_classdata(request_class => '+Plack::Request');
+__PACKAGE__->mk_classdata(response_class => '+Plack::Response');
+__PACKAGE__->mk_classdata(dispatcher_class => 'Dispatcher');
+__PACKAGE__->mk_classdata(config_class => 'Config');
+__PACKAGE__->mk_classdata(view_class => 'View');
+__PACKAGE__->mk_classdata(container_class => 'Container');
 
 sub register {
-    my( $class, $name, $component ) = @_;
-    # register class.
-    Plack::Util::load_class( $component ) unless ref $component;
-    $class->__registered_components->{$name} = $component;
+    my $class = shift;
+    my $container_class = $class->load('container_class');
+    $container_class->register( @_ );
 }
 
 sub get {
-    my( $self, $name ) = @_;
-    return $self->{__components}{$name} if $self->{__components}{$name};
-    my $component = $self->__registered_components->{$name};
-    if ( ref($component) eq 'CODE' ) {
-        $self->{__components}{$name} = $component->($self);
-    }
-    else {
-        $self->{__components}{$name} = $component;
-    }
-    $self->{__components}{$name};
+    my $self = shift;
+    $self->container->get( @_ );
 }
 
 sub load_plugins {
@@ -68,9 +66,9 @@ sub new {
         controller => undef,
         stash => +{},
         env => $env,
-        __components => {},
         finished => 0,
     }, $class;
+    $self->container( $class->load('container_class')->new );
     $self->call_trigger('init');
     $self;
 }
@@ -84,14 +82,19 @@ sub get_routes_file {
     return $file;
 }
 
+sub load {
+    my( $self, $component ) = @_;
+    my $loaded = 
+        Plack::Util::load_class( $self->$component(), $self->appname );
+    $loaded;
+}
+
 sub setup {
     my $class = shift;
-
-    $class->__config( $class->config_class->new );
-
+    return 1 if $class->setup_finished;
+    $class->__config( $class->load('config_class')->new );
     my $file = $class->get_routes_file();
-    $class->__dispatcher( $class->dispatcher_class->new( file => $file ) );
-
+    $class->__dispatcher( $class->load('dispatcher_class')->new( file => $file ) );
     # preload controller classes
     my $routes = $class->__dispatcher->router->{routes};
     if ($routes) {
@@ -107,6 +110,7 @@ sub setup {
             Plack::Util::load_class( "Controller::" . camelize($controller), $class->appname );
         }
     }
+    return $class->setup_finished(1);
 }
 
 sub config {
@@ -117,27 +121,14 @@ sub config {
 
 sub appname {
     my $self = shift;
-    my $appname = $self->__appname();
-    if ($appname) {
-        return $appname;
-    }
-
-    if ($appname = $ENV{PICKLES_APPNAME}) {
-        $self->__appname($appname);
-        return $appname;
-    }
-
-    $appname = ref $self ? ref $self : $self;
-    $appname =~ s/::Context$//;
-
-    $self->__appname($appname);
-    $appname;
+    my $class = ref $self ? ref $self : $self;
+    Pickles::Util::appname( $class );
 }
 
 sub request {
     my $self = shift;
     $self->{_request} ||= do {
-        my $class = $self->request_class;
+        my $class = $self->load('request_class');
         $class->new( $self->env );
     };
 }
@@ -146,7 +137,7 @@ sub req { shift->request(@_); }
 sub response {
     my $self = shift;
     $self->{_response} ||= do {
-        my $class = $self->response_class;
+        my $class = $self->load('response_class');
         $class->new( 200 );
     };
 }
@@ -164,13 +155,12 @@ sub render {
         $view_class = Plack::Util::load_class( $view_class, $self->appname );
     }
     else {
-        $view_class = $self->view_class;
+        $view_class = $self->load('view_class');
     }
-
     my $view;
-    try { $view = $self->get( "_$view_class" ) };
+    try { $view = $self->__components->{"$view_class"} };
     if (! $view) {
-        $self->register( "_$view_class" => ($view = $view_class->new));
+        $self->__components->{"$view_class"} = ($view = $view_class->new);
     }
     $self->res->content_type( $view->content_type );
     my $body = $view->render( $self );
@@ -187,9 +177,9 @@ sub dispatch {
         return $self->handle_not_found;
     }
     my $controller;
-    try { $controller = $self->get( "_$controller_class" ) };
+    try { $controller = $self->__components->{"$controller_class"} };
     if (! $controller) {
-        $self->register( "_$controller_class" => ($controller = $controller_class->new));
+        $self->__components->{"$controller_class"} = ($controller = $controller_class->new);
     }
 
     $self->{controller} = $controller;
@@ -300,29 +290,6 @@ sub args {
     my $self = shift;
     my $match = $self->match;
     $match->{args};
-}
-
-sub request_class {
-    Plack::Util::load_class( 'Pickles::Request' );
-}
-
-sub response_class {
-    Plack::Util::load_class( 'Pickles::Response' );
-}
-
-sub dispatcher_class {
-    my $self = shift;
-    Plack::Util::load_class( 'Dispatcher', $self->appname );
-}
-
-sub config_class {
-    my $self = shift;
-    Plack::Util::load_class( 'Config', $self->appname );
-}
-
-sub view_class {
-    my $self = shift;
-    Plack::Util::load_class( 'View', $self->appname );
 }
 
 1;
