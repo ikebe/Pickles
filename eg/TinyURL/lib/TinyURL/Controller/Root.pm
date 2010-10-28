@@ -11,7 +11,7 @@ sub add {
     my( $self, $c ) = @_;
     if ( $c->req->method eq 'POST' ) {
         my $code = $c->get('DB')->add( $c->req->param('url') );
-        $c->stash->{result} = $c->uri_for( '/', $code );
+        $c->stash->{result} = $c->uri_for( '/'. $code );
     }
 }
 
