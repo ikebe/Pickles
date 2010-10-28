@@ -1,12 +1,15 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 8;
+use Test::More tests => 10;
 use MyApp;
-
+use Plack::App::URLMap;
 # 
+
+my $app = MyApp->handler;
+
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/redirect' );
@@ -16,8 +19,9 @@ test_psgi
 
     } ;
 
+# remove QUERY_STRING.
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/redirect?foo=bar' );
@@ -27,8 +31,23 @@ test_psgi
 
     } ;
 
+# works with P::A::URLMap
+my $urlmap = Plack::App::URLMap->new;
+$urlmap->map('/x' => $app);
 test_psgi
-    app => MyApp->handler,
+    app => $urlmap->to_app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/x/redirect' );
+        my $res = $cb->( $req );
+        is $res->code, '302';
+        is $res->headers->header('Location'), 'http://localhost/x/';
+
+    } ;
+
+
+test_psgi
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/redirect2?foo=bar' );
@@ -39,7 +58,7 @@ test_psgi
     } ;
 
 test_psgi
-    app => MyApp->handler,
+    app => $app,
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( GET => 'http://localhost/redirect_and_abort' );

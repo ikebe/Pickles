@@ -219,19 +219,19 @@ sub finalize {
 
 sub uri_for {
     my( $self, @args ) = @_;
+    # Plack::App::URLMap
     my $req = $self->req;
-    my $uri = $req->uri->clone;
+    my $uri = $req->base;
     my $params =
         ( scalar @args && ref $args[$#args] eq 'HASH' ? pop @args : {} );
-    if ( $args[0] =~ m{^/} ) {
-        $uri->path( join '/', @args );
+    my @path = split '/', $uri->path;
+    unless ( $args[0] =~ m{^/} ) {
+        push @path, split( '/', $self->req->path_info );
     }
-    else {
-        my @path_segments = grep { $_ } map {
-            split /\//, $_
-        } ($uri->path, @args);
-        $uri->path_segments( @path_segments );
-    }
+    push @path, @args;
+    my $path = join '/', @path;
+    $path =~ s|/{2,}|/|g; # xx////xx  -> xx/xx
+    $uri->path( $path );
     $uri->query_form( $params );
     $uri;
 }
