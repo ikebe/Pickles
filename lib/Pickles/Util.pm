@@ -27,7 +27,7 @@ sub appname {
         my $appname = $1;
         return $appname;
     }
-    Carp::croak("Could not determin APPNAME: $class");
+    Carp::croak("Could not determine APPNAME from either %ENV or classname ($class)");
 }
 
 1;
