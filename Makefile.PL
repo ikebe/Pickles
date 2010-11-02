@@ -2,12 +2,18 @@
 # the git repo know what M::I modules you need to install to
 # build this module
 BEGIN {
-    eval {
-        require inc::Module::Install;
-        require Module::Install::AuthorTests;
-        require Module::Install::TestTarget;
-    };
-    if ($@) {
+    my @mi_mods = qw(
+        inc::Module::Install;
+        Module::Install::AuthorTests;
+        Module::Install::TestTarget;
+    );
+    my @unavailable;
+    foreach my $mod ( @mi_mods ) {
+        eval qq{ require $mod } or 
+            push @unavailable, $mod;
+    }
+
+    if (@unavailable) {
         print STDERR <<EOM;
     
 **** Missing Developer Tools! ****
@@ -20,11 +26,16 @@ report it).
 If you are running from a cloned git repository, install the following
 modules first:
 
-    * Module::Install
-    * Module::Install::AuthorTests
-    * Module::Install::TestTarget
+EOM
+        print STDERR "    * $_\n" for @unavailable;
+        print STDERR <<EOM;
 
-and try again.
+use cpanm or cpan to install these via
+
+    cpanm @unavailable
+
+and try again
+
 EOM
         exit 0;
     }
