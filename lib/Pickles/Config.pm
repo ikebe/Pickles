@@ -9,7 +9,6 @@ sub new {
     my $class = shift;
     my %args = @_;
     my $self = bless {}, $class;
-    (my $appname = $class) =~ s/::Config$//;
     $self->{appname} = Pickles::Util::appname( $class );
     $self->setup_home( $args{home} );
     $self->{env} = $args{env} || env_value('ENV', $self->appname);
