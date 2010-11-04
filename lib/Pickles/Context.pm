@@ -182,7 +182,6 @@ sub dispatch {
         $self->__components->{"$controller_class"} = ($controller = $controller_class->new);
     }
 
-    $self->{controller} = $controller;
     try {
         $self->call_trigger('pre_dispatch');
         $controller->execute( $action, $self );
