@@ -9,13 +9,16 @@ use HTTP::Response;
 use HTTP::Message::PSGI;
 use MyApp;
 
-eval { require HTTP::Session };
-if ( $@ ) {
-    plan skip_all => "HTTP::Session is not installed";
+my $load_error = 0;
+foreach my $module ( qw( HTTP::Session String::Random ) ) {
+    eval "require $module";
+    if ( $@ ) {
+        plan skip_all => "$module is not installed";
+        $load_error++;
+        last;
+    }
 }
-else {
-    plan tests => 5;
-}
+plan tests => 5;
 
 $ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session AntiCSRF FillInForm));
