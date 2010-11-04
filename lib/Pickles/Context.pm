@@ -181,6 +181,8 @@ sub dispatch {
     if (! $controller) {
         $self->__components->{"$controller_class"} = ($controller = $controller_class->new);
     }
+    $controller->init( $self );
+    $self->controller( $controller );
 
     try {
         $self->call_trigger('pre_dispatch');

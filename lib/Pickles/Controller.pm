@@ -8,6 +8,10 @@ sub new {
     $self;
 }
 
+sub init {
+    my( $self, $c ) = @_;
+}
+
 sub execute {
     my( $self, $action, $c ) = @_;
     my $config = $c->config;
