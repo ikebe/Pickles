@@ -1,17 +1,18 @@
 package Pickles::Plugin::Session;
 use strict;
-use UNIVERSAL::require;
 
 sub install {
     my( $class, $pkg ) = @_;
     $pkg->add_trigger( init => sub {
         my $c = shift;
         if ( $c->env->{'psgix.session'} ) {
-            Plack::Session->require;
+            eval { require Plack::Session };
+            die if $@;
             $c->stash->{'_session'} = Plack::Session->new( $c->env );
         }
         else {
-            HTTP::Session->require;
+            eval { require HTTP::Session };
+            die if $@;
             my $config = $c->config->{'Plugin::Session'};
             my $session= HTTP::Session->new( %{$config}, request => $c->req );
             $c->stash->{'_session'} = $session;

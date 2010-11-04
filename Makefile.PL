@@ -57,7 +57,6 @@ requires 'Module::Setup' => '0.09';
 requires 'Class::Data::Inheritable';
 requires 'Router::Simple';
 requires 'String::CamelCase';
-requires 'UNIVERSAL::require';
 requires 'Class::Trigger';
 
 requires 'Text::Xslate';
