@@ -15,6 +15,7 @@
 ^tools/
 \.svn/
 \.git/
+\.gitignore
 ^[^/]+\.yaml$
 ^[^/]+\.pl$
 ^\.shipit$
