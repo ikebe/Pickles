@@ -29,6 +29,7 @@ sub load {
     my ($self, $file) = @_;
 
     my $o = \&register;
+    no warnings 'redefine';
     local *register = sub($$;$) {
         $o->( $self, @_ );
     };

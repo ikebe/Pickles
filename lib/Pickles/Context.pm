@@ -79,7 +79,6 @@ sub new {
         env => $env,
         finished => 0,
     }, $class;
-    $self->container( $class->load('container_class')->new );
     $self->call_trigger('init');
     $self;
 }
@@ -181,6 +180,9 @@ sub render {
 
 sub dispatch {
     my $self = shift;
+
+    my $guard = $self->container->new_scope;
+
     $self->_prepare;
     my $controller_class = $self->controller_class;
     my $action = $self->action;
