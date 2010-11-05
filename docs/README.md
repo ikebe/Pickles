@@ -170,7 +170,7 @@ $ENV{'MYAPP_CONFIG'} が存在する場合は etc/config.pl の代わりにそ�
 
 ### Container ###
 
-Webアプリケーション、CLI から共通で使用するコンポーネント登録して再利用するための仕組みとして Container クラスが用意されています。
+Pickles は Model の機構を持ちませんが、Webアプリケーション、CLI から共通で使用するコンポーネントを登録して再利用するための仕組みとして Container クラスが用意されています。
 
     package MyApp::Container;
     
@@ -185,6 +185,7 @@ Webアプリケーション、CLI から共通で使用するコンポーネン�
     1;
 
     __END__
+
 
     Webアプリケーション
     
@@ -205,17 +206,6 @@ Webアプリケーション、CLI から共通で使用するコンポーネン�
 
 デフォルトでは文字エンコーディングを適切に取り扱うための Pickles::Plugin::Encode をロードしています。
 
-
-
 挙動のカスタマイズは Context を拡張する事によって行います。
 Context の拡張は主に継承によるメソッドの追加、オーバーライド、Class::Trigger によるフック関数の実行によって行います。
-
-### Object Container としての挙動 ###
-
-Pickles は Model の機構を持ちませんが、コードを書きやすくするため、Context が Object Container として振る舞う事が出来ます。
-
-
-
-
-
 

@@ -303,18 +303,22 @@ Pickles::Context - Pickles context class.
 
 =head1 SYNOPSIS
 
- package MyApp::Context;
- 
- use strict;
- use warnings;
- use parent 'Pickles::Context';
- __PACKAGE__->load_plugins(qw(Encode));
+  package MyApp::Context;
   
- 1;
- 
- __END__
+  use strict;
+  use warnings;
+  use parent 'Pickles::Context';
+  __PACKAGE__->load_plugins(qw(Encode));
+   
+  1;
+  
+  __END__
 
 =head1 METHODS
+
+=head2 $c->appname
+
+returns a application name.
 
 =head2 $c->request, $c->req
 
@@ -324,10 +328,78 @@ returns a L<Pickles::Request> object.
 
 returns a L<Pickles::Response> object.
 
+=head2 $c->render( [ $view_class ] );
+
+render content with specified view class.
+if $view_class is omitted, $c->view_class is used as default.
+
 =head2 $c->uri_for( @path, \%query );
 
 construct absolute uri of the @path.
 \%query values are treat as QUERY_STRING.
+
+=head2 $c->redirect( $url, [ $code ] );
+
+redirect to the $url. default $code is 302.
+if $url is not absolute, the value is passed to $c->uri_for
+
+=head2 $c->abort
+
+abort next operation and goto finalize phase.
+
+=head2 MyApp->load_plugins(...);
+
+load plugins. Omit the C<Pickles::Plugin::> prefix from the name.
+
+=head2 MyApp->register( $name, $initializer );
+
+Register a object. This method is delegated to C<Container>.
+see L<Pickles::Container> for details.
+
+=head2 $c->get( $name );
+
+get the registerred object referred by the given $name.
+This method is delegated to C<Container>.
+
+=head1 CLASS VARIABLES
+
+The following class variables specify component classes.
+Omit the $c->appname prefix from the class name.
+
+    # MyApp::View
+    MyApp::Context->view_class('View');
+
+    # MyApp::View::TT
+    MyApp::Context->view_class('View::TT');
+
+if you want to use fully qualified class name, use plus sign prefix.
+
+    # Foo::View
+    MyApp::Context->view_class('+Foo::View');
+
+=head2 MyApp::Context->config_class
+
+default value is C<Config>
+
+=head2 MyApp::Context->request_class
+
+default value is C<+Pickles::Request>
+
+=head2 MyApp::Context->response_class
+
+default value is C<+Pickles::Response>
+
+=head2 MyApp::Context->view_class
+
+default value is C<View>
+
+=head2 MyApp::Context->dispatcher_class
+
+default value is C<Dispatcher>
+
+=head2 MyApp::Context->container_class
+
+default value is C<Container>
 
 =head1 AUTHOR
 
