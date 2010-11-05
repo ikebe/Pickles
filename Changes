@@ -1,4 +1,46 @@
 Revision history for Perl extension Pickles
 
+0.04 - 05 Nov 2010
+
+    [ BACKWARDS INCOMPATIBLE CHANGES ]
+    * Generated application will use Xslate as the default template engine
+
+    * Generated PSGI file is now named MyApp.psgi instead of app.psgi
+
+    * Pickles::Dispatcher now reads an external file to grab the routing
+      rules. The rules should return a Router::Simple object
+
+    * Configuration files are now read in the following order:
+        1. $HOME/etc/config.pl
+        2. $HOME/etc/$ENV{MYAPP_CONFIG}.pl
+        3. $HOME/etc/$ENV{MYAPP_CONFIG}_$ENV{MYAPP_ENV}.pl
+
+    [ ENHANCEMENTS ]
+    * Pickles now support Text::MicroTemplate, Text::Xslate.
+
+    * Added plugins for Plugin::AntiCSRF, Plugin::FillInForm,
+      Plugin::Log and Plugin::Session
+
+    * Pickles::Context's container capabilities are now delegated to
+      Pickles::Container.
+
+    * Pickles::Container->register  now supports a second argument, 
+      which can make an object persistent by passing 
+        $container->register( \&code, { persisitent => 1 });
+
+    * Added MyApp->context_class to switch the context object
+
+    * View objects and controller objects are cached after creation.
+
+    * Controllers now can be initialized using the context via Controller->init
+
+    [ BUGFIXES ]
+    * Fixed a problem where closures used when reading config files were
+      causing problems on perl 5.8.8.
+
+0.03    NOT RELEASED
+
+0.02    NOT RELEASED
+
 0.01    Tue Mar  9 18:26:57 2010
         - original version
