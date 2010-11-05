@@ -25,10 +25,21 @@ sub clear_scope {
     $self->{scoped_objects} = {};
 }
 
+sub load {
+    my ($self, $file) = @_;
+
+    my $o = \&register;
+    local *register = sub($$;$) {
+        $o->( $self, @_ );
+    };
+    my $result = do $file;
+    die "Failed to parse file $file: $@" if $@;
+    die "Failed to run file (did you return a true value?)" unless $result;
+    $self;
+}
+
 sub components {
     my $self = shift;
-use Carp qw(confess);
-confess "poop" if ! ref $self;
     my $h = $self->{components};
     if (! $h) {
         $self->{components} = ($h = {});

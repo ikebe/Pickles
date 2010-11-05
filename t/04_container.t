@@ -7,13 +7,13 @@ sub PicklesTestDummy::A::new { bless {}, $_[0] };
 sub PicklesTestDummy::B::new { bless {}, $_[0] };
 sub PicklesTestDummy::C::new { bless {}, $_[0] };
 
-my $c = Pickles::Container->new();
-$c->register( A => PicklesTestDummy::A->new );
-$c->register( B => sub { PicklesTestDummy::B->new });
-$c->register( C => sub { PicklesTestDummy::C->new }, { persistent => 1 } );
-
 
 {
+    my $c = Pickles::Container->new();
+    $c->register( A => PicklesTestDummy::A->new );
+    $c->register( B => sub { PicklesTestDummy::B->new });
+    $c->register( C => sub { PicklesTestDummy::C->new }, { persistent => 1 } );
+
     my ($A, $B, $C);
     {
         my $scope = $c->new_scope();
@@ -36,6 +36,22 @@ $c->register( C => sub { PicklesTestDummy::C->new }, { persistent => 1 } );
         is $C, $c->get('C'), "C is the same as previous C";
     }
         
+}
+
+{
+    my $c = Pickles::Container->new();
+    $c->load( "t/04_container_profile.pl" );
+
+    my $A = $c->get('foo');
+    my $B = $c->get('bar');
+    my $C = $c->get('baz');
+
+    ok $A, "A is defined";
+    isa_ok $A, "PicklesTestDummy::A";
+    ok $B, "B is defined";
+    isa_ok $B, "PicklesTestDummy::B";
+    ok $C, "C is defined";
+    isa_ok $C, "PicklesTestDummy::C";
 }
 
 
