@@ -46,3 +46,45 @@ sub match {
 1;
 
 __END__
+
+=head1 NAME
+
+Pickles::Dispatcher - Dispatcher Object
+
+=head1 SYNOPSIS
+
+    # in MyApp::Controller::Foo
+    package MyApp::Controller::Foo;
+    use base qw(Pickles::Controller);
+
+    sub index {
+        my ($self, $c) = @_;
+        ....
+    }
+
+    # etc/routes.pl
+    # Router::Simple::Declare is implicitly imported into the current
+    # scope, so you can use it's methods right away
+    router {
+        connect '/' =>
+            { controller => 'Foo', action => 'index' }
+    };
+
+=head1 DESCRIPTION
+
+Pickles::Dispatcher uses Router::Simple to route your requests.
+Unlike frameworks like Catalyst, the mapping between URI and Controller
+actions are separated out to an external file (etc/routes.pl by default)
+
+=head1 METHODS
+
+If you are an application developer, you should not need to touch
+these directly.
+
+=head2 new
+
+=head2 router
+
+=head2 match
+
+=cut
