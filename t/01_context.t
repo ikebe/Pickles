@@ -9,7 +9,8 @@ use HTTP::Message::PSGI;
 
 my $req = HTTP::Request->new( GET => 'http://localhost/foo' );
 my $env = $req->to_psgi;
-my $c = MyApp::Context->new( $env );
+my $c = MyApp::Context->new();
+my $guard = $c->new_request( $env );
 
 ok $c->get('model_obj');
 is ref $c->get('model_obj'), 'MyApp::Model::Test';

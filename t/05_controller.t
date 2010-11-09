@@ -9,7 +9,8 @@ use HTTP::Message::PSGI;
 my $req = HTTP::Request->new( GET => 'http://localhost/foo/bar' );
 my $env = $req->to_psgi;
 MyApp::Context->setup;
-my $c = MyApp::Context->new( $env );
+my $c = MyApp::Context->new();
+my $guard = $c->new_request( $env );
 $c->dispatch;
 
 isa_ok $c->controller, 'MyApp::Controller::Foo';

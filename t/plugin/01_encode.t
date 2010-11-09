@@ -15,10 +15,12 @@ my $req = HTTP::Request->new( GET => 'http://localhost/foo?q=%E3%83%A9%E3%82%A4%
 my $env = $req->to_psgi;
 MyApp::Context->setup;
 MyApp::Context->load_plugins(qw(Encode));
-my $c = MyApp::Context->new( $env );
-$c->dispatch;
+my $c = MyApp::Context->new();
+my $guard = $c->new_request( $env );
+{
+    $c->dispatch;
+    ok(utf8::is_utf8($c->req->param('q')));
 
-ok(utf8::is_utf8($c->req->param('q')));
-
-ok(!utf8::is_utf8($c->res->body));
-like($c->res->body, qr/ライブドア/);
+    ok(!utf8::is_utf8($c->res->body));
+    like($c->res->body, qr/ライブドア/);
+}

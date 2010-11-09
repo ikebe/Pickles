@@ -11,7 +11,8 @@ use HTTP::Message::PSGI;
 my $req = HTTP::Request->new( GET => 'http://localhost/' );
 my $env = $req->to_psgi;
 MyApp::Context->load_plugins(qw(+MyApp::Plugin::Test));
-my $c = MyApp::Context->new( $env );
+my $c = MyApp::Context->new();
+my $guard = $c->new_request( $env );
 
 is $c->test_func, 'test_func', 'call plugin method';
 

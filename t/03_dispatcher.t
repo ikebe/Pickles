@@ -14,7 +14,8 @@ isa_ok( $dispatcher, 'MyApp::Dispatcher' );
 {
     my $req = HTTP::Request->new( GET => 'http://localhost/foo' );
     my $env = $req->to_psgi;
-    my $c = MyApp::Context->new( $env );
+    my $c = MyApp::Context->new();
+    my $guard = $c->new_request( $env );
     
     ok( my $match = $dispatcher->match( $c ) );
     is( $match->{controller}, 'Root' );
@@ -24,7 +25,8 @@ isa_ok( $dispatcher, 'MyApp::Dispatcher' );
 {
     my $req = HTTP::Request->new( GET => 'http://localhost/items/1' );
     my $env = $req->to_psgi;
-    my $c = MyApp::Context->new( $env );
+    my $c = MyApp::Context->new();
+    my $guard = $c->new_request( $env );
     
     ok( my $match = $dispatcher->match( $c ) );
     is( $match->{controller}, 'Item' );

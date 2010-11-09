@@ -72,15 +72,28 @@ sub add_method {
 }
 
 sub new {
-    my( $class, $env ) = @_;
-    my $self = bless { 
-        controller => undef,
-        stash => +{},
-        env => $env,
-        finished => 0,
-    }, $class;
-    $self->call_trigger('init');
-    $self;
+    my $class = shift;
+    my $self = bless { @_ }, $class;
+    return $self;
+}
+
+sub Pickles::Context::RequestGuard::DESTROY { $_[0]->() }
+sub new_request {
+    my( $self, $env ) = @_;
+
+    $self->{stash} = {};
+    $self->{controller} = undef;
+    $self->{env} = $env;
+    $self->{finished} = 0;
+    return bless sub {
+        delete $self->{stash};
+        delete $self->{controller};
+        delete $self->{env};
+        delete $self->{finished};
+        delete $self->{_request};
+        delete $self->{_response};
+        delete $self->{_match};
+    }, 'Pickles::Context::RequestGuard';
 }
 
 sub get_routes_file {
@@ -182,7 +195,7 @@ sub dispatch {
     my $self = shift;
 
     my $guard = $self->container->new_scope;
-
+    $self->call_trigger('init');
     $self->_prepare;
     my $controller_class = $self->controller_class;
     my $action = $self->action;
