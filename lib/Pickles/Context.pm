@@ -2,7 +2,7 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished controller container);
+use Plack::Util::Accessor qw(env stash finished controller);
 use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
@@ -13,6 +13,7 @@ __PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 __PACKAGE__->mk_classdata(__dispatcher => undef);
 __PACKAGE__->mk_classdata(__config => undef);
+__PACKAGE__->mk_classdata(__container => undef);
 __PACKAGE__->mk_classdata(setup_finished => 0);
 
 __PACKAGE__->mk_classdata(request_class => '+Plack::Request');
@@ -24,8 +25,18 @@ __PACKAGE__->mk_classdata(container_class => 'Container');
 
 sub register {
     my $class = shift;
-    my $container_class = $class->load('container_class');
-    $container_class->register( @_ );
+    my $container = $class->container();
+    $container->register( @_ );
+}
+
+sub container {
+    my $class = shift;
+    my $container = $class->__container();
+    if (! $container) {
+        my $container_class = $class->load('container_class');
+        $class->__container( $container = $container_class->new );
+    }
+    return $container;
 }
 
 sub get {
@@ -68,7 +79,6 @@ sub new {
         env => $env,
         finished => 0,
     }, $class;
-    $self->container( $class->load('container_class')->new );
     $self->call_trigger('init');
     $self;
 }
@@ -170,6 +180,9 @@ sub render {
 
 sub dispatch {
     my $self = shift;
+
+    my $guard = $self->container->new_scope;
+
     $self->_prepare;
     my $controller_class = $self->controller_class;
     my $action = $self->action;
