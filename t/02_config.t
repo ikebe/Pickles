@@ -1,7 +1,7 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 19;
+use Test::More tests => 22;
 use MyApp::Config;
 use Scalar::Util qw(refaddr);
 
@@ -23,7 +23,10 @@ use Scalar::Util qw(refaddr);
     
     # __path_to()
     like $config->get('tmp_dir'), qr{^/};
-    
+
+    like $config->path_to('foo', 'bar.txt'), qr{^/};
+    like $config->path_to('foo', 'bar.txt'), qr{MyApp/foo/bar\.txt$};
+    is $config->path_to('/foo', 'bar', 'baz.txt'), '/foo/bar/baz.txt';
 }
 
 {

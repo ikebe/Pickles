@@ -129,6 +129,9 @@ sub get_config_files {
 
 sub path_to {
     my( $self, @path ) = @_;
+    if ( File::Spec->file_name_is_absolute( $path[0] ) ) {
+        return File::Spec->catfile( @path );
+    }
     file( $self->home, @path )->stringify;
 }
 
