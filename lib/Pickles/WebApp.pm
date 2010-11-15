@@ -2,7 +2,6 @@ package Pickles::WebApp;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Scope::Container;
 
 __PACKAGE__->mk_classdata( 'context_class' => 'Context' );
 
