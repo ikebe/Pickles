@@ -2,22 +2,30 @@ package Pickles::WebApp;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use String::CamelCase qw(camelize);
+use Scope::Container;
 
 __PACKAGE__->mk_classdata( 'context_class' => 'Context' );
 
 sub handler {
     my $class = shift;
-    my $context_class = $class->context_class || 'Context';
-    $context_class = Plack::Util::load_class( $context_class, $class );
-    $context_class->setup;
     my $app = sub {
         my $env = shift;
-        my $c = $context_class->new( $env );
+        my $c = $class->create_context(
+            env => $env,
+        );
         $c->dispatch;
     };
     $app;
 }
+
+sub create_context {
+    my $class = shift;
+    my %args = @_;
+    my $context_class = 
+        Plack::Util::load_class( $class->context_class, $class );
+    $context_class->new( %args );
+}
+
 
 1;
 

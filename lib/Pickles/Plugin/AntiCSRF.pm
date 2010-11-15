@@ -5,8 +5,6 @@ use Carp ();
 
 sub install {
     my( $class, $pkg ) = @_;
-    my $config = $pkg->config->{'Plugin::AntiCSRF'};
-    my $token_name = $config->{token_name} || '_token';
     $pkg->add_trigger( post_render => sub {
         my $c = shift;
         unless ( $c->has_plugin('Session') ) {
@@ -18,8 +16,10 @@ sub install {
             # an HTML document
             return;
         }
+        my $config = $c->config->{'Plugin::AntiCSRF'};
+        my $token_name = $config->{token_name} || '_token';
+        my $length = $config->{token_length} || 8;
 
-        my $length = $c->config->{'Plugin::AntiCSRF'}->{token_length} || 8;
         my $body = $c->res->body;
         my $token = 
             $c->session->get( $token_name ) || random_regex("[a-zA-Z0-9_]{$length}");
@@ -29,6 +29,8 @@ sub install {
     } );
     $pkg->add_trigger( pre_dispatch => sub {
         my $c = shift;
+        my $token_name = 
+            $c->config->{'Plugin::AntiCSRF'}->{token_name} || '_token';
         if ( $c->req->method eq 'POST' && !$c->stash->{skip_csrf_check} ) {
             my $req_val = $c->req->param( $token_name );
             my $session_val = $c->session->get( $token_name );

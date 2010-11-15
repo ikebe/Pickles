@@ -11,10 +11,16 @@ sub new {
     my $self = bless {}, $class;
     $self->{appname} = Pickles::Util::appname( $class );
     $self->setup_home( $args{home} );
-    $self->{env} = $args{env} || env_value('ENV', $self->appname);
-    $self->{base} = $args{base} || env_value('CONFIG', $self->appname);
     $self->{ACTION_PREFIX} = '';
-    $self->load_config;
+    $self->load_files( $args{files} || [] );
+    $self;
+}
+
+sub bootstrap {
+    my $class = shift;
+    my $self = $class->new;
+    my $files = $self->get_config_files;
+    $self->load_files( $files );
     $self;
 }
 
@@ -42,9 +48,8 @@ sub setup_home {
     }
 }
 
-sub load_config {
-    my $self = shift;
-    my $files = $self->get_config_files;
+sub load_files {
+    my( $self, $files ) = @_;
     my %config;
 
     # In 5.8.8 at least, putting $self in an evaled code produces
@@ -95,11 +100,8 @@ sub get_config_files {
     my $self = shift;
     my @files;
 
-    if ( $self->{base} ) {
-        if ( $self->{base} !~ m{^/} ) {
-            $self->{base} = $self->path_to( $self->{base} );
-        }
-        push @files, $self->{base};
+    if ( my $config_file = env_value('CONFIG', $self->appname) ) {
+        push @files, $self->path_to( $config_file );
     }
     else {
         my @base_files = ( File::Spec->catfile('etc', 'config.pl'), 'config.pl' );
@@ -109,17 +111,14 @@ sub get_config_files {
         }
     }
     
-    if ( my $env = $self->{env} ) {
+    if ( my $env = env_value('ENV', $self->appname) ) {
         my @env_files;
         for my $file( @files ) {
             my ($v, $d, $fname) = File::Spec->splitpath( $file );
             $fname =~ s/(\.[^\.]+)?$/$1 ? "_%s$1" : "%s"/e;
             my $template = File::Spec->catpath( $v, $d, $fname );
             my $filename = sprintf $template, $env;
-            if ( $filename !~ m{^/}) {
-                $filename = $self->path_to( $filename );
-            }
-            push @env_files, $filename;
+            push @env_files, $self->path_to( $filename );
 
         }
         push @files, @env_files;

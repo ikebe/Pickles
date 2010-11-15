@@ -1,6 +1,8 @@
 package Pickles::Dispatcher;
 use strict;
 use Router::Simple;
+use Plack::Util;
+use String::CamelCase qw(camelize);
 use Carp ();
 
 sub new {
@@ -41,6 +43,24 @@ sub match {
     }
     $match->{args} = \%args;
     $match;
+}
+
+sub load_controllers {
+    my( $self, $prefix ) = @_;
+    my $routes = $self->router->{routes};
+    if ($routes) {
+        my %seen;
+        foreach my $route (@$routes) {
+            my $dest = $route->dest;
+            my $controller = $dest->{controller};
+            if (! $controller) {
+                warn "No controller specified for path " . $route->pattern;
+            }
+            next if $seen{ $controller }++;
+            Plack::Util::load_class( "Controller::" . camelize($controller), $prefix );
+        }
+    }
+    1;
 }
 
 1;

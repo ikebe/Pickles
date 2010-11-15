@@ -25,6 +25,7 @@ sub config {
 
 sub merge_config {
     my( $self, $c ) = @_;
+
     my $class = ref $self;
     my $appname = $c->config->appname;
     (my $config_key = $class) =~ s/^${appname}:://;

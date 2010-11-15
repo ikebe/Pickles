@@ -8,7 +8,7 @@ use HTTP::Message::PSGI;
 
 my $req = HTTP::Request->new( GET => 'http://localhost/foo/bar' );
 my $env = $req->to_psgi;
-MyApp::Context->setup;
+#MyApp::Context->setup;
 my $c = MyApp::Context->new( $env );
 $c->dispatch;
 

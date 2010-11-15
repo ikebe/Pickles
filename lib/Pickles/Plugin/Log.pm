@@ -4,13 +4,19 @@ use Log::Dispatch;
 
 sub install {
     my( $class, $pkg ) = @_;
-    my $config = $pkg->config->{'Plugin::Log'} || +{
-        outputs => [
-            [ 'Screen', min_level => 'debug', stderr => 1, newline => 1 ],
-        ],
-    };
-    my $logger = Log::Dispatch->new( %{$config} );
-    $pkg->add_method( log => sub { $logger } );
+    my $logger;
+    $pkg->add_method( log => sub { 
+        my $c = shift;
+        $logger ||= do {
+            my $config = $c->config->{'Plugin::Log'} || +{
+                outputs => [
+                    [ 'Screen', min_level => 'debug', stderr => 1, newline => 1 ],
+                ],
+            };
+            Log::Dispatch->new( %{$config} );
+        };
+        $logger;
+    } );
 }
 
 1;

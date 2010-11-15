@@ -19,12 +19,16 @@ else {
     plan tests => 1;
 }
 
-close STDERR;
-open STDERR, '>', \my $stderr;
-MyApp::Context->load_plugins(qw(Log));
-my $c = MyApp::Context->new;
-$c->log->debug('XXX');
-is $stderr, "XXX\n";
+
+{
+    my $req = HTTP::Request->new( GET => 'http://localhost/' );
+    local *STDERR;
+    open STDERR, '>', \my $stderr;
+    MyApp::Context->load_plugins(qw(Log));
+    my $c = MyApp::Context->new( $req->to_psgi );
+    $c->log->debug('XXX');
+    is $stderr, "XXX\n";
+}
 
 
 

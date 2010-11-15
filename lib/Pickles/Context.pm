@@ -2,39 +2,38 @@ package Pickles::Context;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(env stash finished controller);
+use Plack::Util::Accessor qw(env stash finished controller config dispatcher container);
 use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
-use Carp qw(croak);
+use Carp ();
 use Try::Tiny;
 
 __PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
-__PACKAGE__->mk_classdata(__dispatcher => undef);
-__PACKAGE__->mk_classdata(__config => undef);
-__PACKAGE__->mk_classdata(__container => undef);
-__PACKAGE__->mk_classdata(setup_finished => 0);
+#__PACKAGE__->mk_classdata(__container => undef);
 
+__PACKAGE__->mk_classdata(config_class => 'Config');
+__PACKAGE__->mk_classdata(dispatcher_class => 'Dispatcher');
 __PACKAGE__->mk_classdata(request_class => '+Plack::Request');
 __PACKAGE__->mk_classdata(response_class => '+Plack::Response');
-__PACKAGE__->mk_classdata(dispatcher_class => 'Dispatcher');
-__PACKAGE__->mk_classdata(config_class => 'Config');
 __PACKAGE__->mk_classdata(view_class => 'View');
 __PACKAGE__->mk_classdata(container_class => 'Container');
 
 sub register {
     my $class = shift;
-    my $container = $class->container();
+    my $container = $class->__container();
     $container->register( @_ );
 }
 
-sub container {
+# class based cache.
+sub __container {
     my $class = shift;
-    my $container = $class->__container();
+    my $container;
+    try { $container = $class->__components->{'_container'}; };
     if (! $container) {
-        my $container_class = $class->load('container_class');
-        $class->__container( $container = $container_class->new );
+        $container = $class->setup_container;
+        $class->__components->{'_container'} = $container;
     }
     return $container;
 }
@@ -71,27 +70,6 @@ sub add_method {
     }
 }
 
-sub new {
-    my( $class, $env ) = @_;
-    my $self = bless { 
-        controller => undef,
-        stash => +{},
-        env => $env,
-        finished => 0,
-    }, $class;
-    $self->call_trigger('init');
-    $self;
-}
-
-sub get_routes_file {
-    my $class = shift;
-    my $file = Pickles::Util::env_value('ROUTES', $class->appname );
-    if (! $file) {
-        $file = $class->config->path_to( 'etc/routes.pl' );
-    }
-    return $file;
-}
-
 sub load {
     my( $self, $component ) = @_;
     my $loaded = 
@@ -99,35 +77,80 @@ sub load {
     $loaded;
 }
 
-sub setup {
+sub new {
     my $class = shift;
-    return 1 if $class->setup_finished;
-    $class->__config( $class->load('config_class')->new );
-    my $file = $class->get_routes_file();
-    $class->__dispatcher( $class->load('dispatcher_class')->new( file => $file ) );
-    # preload controller classes
-    my $routes = $class->__dispatcher->router->{routes};
-    if ($routes) {
-        my %seen;
-        foreach my $route (@$routes) {
-            my $dest = $route->dest;
-            my $controller = $dest->{controller};
-            if (! $controller) {
-                warn "No controller specified for path " . $route->pattern;
-            }
-
-            next if $seen{ $controller }++;
-            Plack::Util::load_class( "Controller::" . camelize($controller), $class->appname );
-        }
+    my %args;
+    if ( @_ == 1 && ref $_[0] eq 'HASH' ) {
+        $args{env} = $_[0];
     }
-    return $class->setup_finished(1);
+    else {
+        %args = @_;
+    }
+    Carp::croak(q{$env is required}) unless $args{env};
+    my $self = bless { 
+        controller => undef,
+        stash => +{},
+        finished => 0,
+        %args,
+    }, $class;
+    $self->init;
+    $self->call_trigger('init');
+    $self;
 }
 
-sub config {
-    my $class = shift;
-    $class->setup unless defined $class->__config;
-    $class->__config;
+sub init {
+    my $self = shift;
+    unless ( $self->config ) {
+        # load default config.
+        my $config;
+        try { $config = $self->__components->{'_config'} };
+        if (! $config) {
+            $config = $self->setup_config;
+            $self->__components->{'_config'} = $config;
+        }
+        $self->config( $config );
+    }
+    unless ( $self->dispatcher ) {
+        my $dispatcher;
+        try { $dispatcher = $self->__components->{'_dispatcher'} };
+        if (! $dispatcher) {
+            $dispatcher = $self->setup_dispatcher;
+            $self->__components->{'_dispatcher'} = $dispatcher;
+        }
+        $self->dispatcher( $dispatcher );
+    }
+    unless ( $self->container ) {
+        $self->container( $self->__container );
+    }
 }
+
+sub setup_container {
+    my $self = shift;
+    my $container_class = $self->load( 'container_class' );
+    $container_class->new;
+}
+
+sub setup_config {
+    my $self = shift;
+    my $config_class = $self->load( 'config_class' );
+    return $config_class->bootstrap;
+}
+
+sub setup_dispatcher {
+    my $self = shift;
+    my $dispatcher_class = $self->load( 'dispatcher_class' );
+    return $dispatcher_class->new( file => $self->get_routes_file );
+}
+
+sub get_routes_file {
+    my $self = shift;
+    my $file = Pickles::Util::env_value('ROUTES', $self->appname );
+    if (! $file) {
+        $file = $self->config->path_to( 'etc/routes.pl' );
+    }
+    return $file;
+}
+
 
 sub appname {
     my $self = shift;
@@ -155,7 +178,7 @@ sub res { shift->response(@_); }
 
 sub match {
     my $self = shift;
-    my $dispatcher = $self->__dispatcher;
+    my $dispatcher = $self->dispatcher;
     $self->{_match} ||= $dispatcher->match( $self->req );
 }
 
@@ -208,7 +231,7 @@ sub dispatch {
         }
     }
     catch {
-        croak $_ unless /^PICKLES_EXCEPTION_ABORT/
+        Carp::croak $_ unless /^PICKLES_EXCEPTION_ABORT/
     };
     return $self->finalize;
 }

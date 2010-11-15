@@ -7,7 +7,7 @@ use Scalar::Util qw(refaddr);
 
 {
     $ENV{'MYAPP_ENV'} = 'test';
-    my $config = MyApp::Config->new;
+    my $config = MyApp::Config->bootstrap;
     
     isa_ok( $config, 'MyApp::Config' );
     is @{$config->{__FILES}}, 2;
@@ -40,7 +40,7 @@ use Scalar::Util qw(refaddr);
     {
         local *STDERR;
         open STDERR, '>', \$buffer;
-        $config = MyApp::Config->new;
+        $config = MyApp::Config->bootstrap;
     }
 
     isa_ok( $config, 'MyApp::Config' );
@@ -55,7 +55,7 @@ use Scalar::Util qw(refaddr);
     {
         local *STDERR;
         open STDERR, '>', \$buffer;
-        $config = MyApp::Config->new;
+        $config = MyApp::Config->bootstrap;
     }
     if (ok $buffer) {
         like $buffer, qr/02_config_bar\.pl: Bogus error/;
@@ -67,11 +67,11 @@ use Scalar::Util qw(refaddr);
 }
 
 {
-    my $base = File::Spec->catfile(Cwd::cwd(), 't', '02_config_baz.pl');
-    my $config = MyApp::Config->new(
-        base => $base,
-        env => 'dev',
+    my @files = (
+        File::Spec->catfile(Cwd::cwd(), 't', '02_config_baz.pl'),
+        File::Spec->catfile(Cwd::cwd(), 't', '02_config_baz_dev.pl'),
     );
+    my $config = MyApp::Config->new( files => \@files );
     is $config->get('baz'), '1';
     is $config->get('dev'), '1';
     is @{$config->{__FILES}}, 2;
