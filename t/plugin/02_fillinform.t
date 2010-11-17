@@ -19,7 +19,6 @@ else {
 
 $Plack::Test::Impl = "Server";
 
-
 MyApp::Context->load_plugins(qw(Encode FillInForm));
 
 test_psgi

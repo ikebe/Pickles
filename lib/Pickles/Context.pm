@@ -11,14 +11,11 @@ use Try::Tiny;
 
 __PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
-#__PACKAGE__->mk_classdata(__container => undef);
 
-__PACKAGE__->mk_classdata(config_class => 'Config');
-__PACKAGE__->mk_classdata(dispatcher_class => 'Dispatcher');
-__PACKAGE__->mk_classdata(request_class => '+Plack::Request');
-__PACKAGE__->mk_classdata(response_class => '+Plack::Response');
-__PACKAGE__->mk_classdata(view_class => 'View');
 __PACKAGE__->mk_classdata(container_class => 'Container');
+__PACKAGE__->mk_classdata(request_class => '+Pickles::Request');
+__PACKAGE__->mk_classdata(response_class => '+Pickles::Response');
+__PACKAGE__->mk_classdata(view_class => 'View');
 
 sub register {
     my $class = shift;
@@ -100,25 +97,6 @@ sub new {
 
 sub init {
     my $self = shift;
-    unless ( $self->config ) {
-        # load default config.
-        my $config;
-        try { $config = $self->__components->{'_config'} };
-        if (! $config) {
-            $config = $self->setup_config;
-            $self->__components->{'_config'} = $config;
-        }
-        $self->config( $config );
-    }
-    unless ( $self->dispatcher ) {
-        my $dispatcher;
-        try { $dispatcher = $self->__components->{'_dispatcher'} };
-        if (! $dispatcher) {
-            $dispatcher = $self->setup_dispatcher;
-            $self->__components->{'_dispatcher'} = $dispatcher;
-        }
-        $self->dispatcher( $dispatcher );
-    }
     unless ( $self->container ) {
         $self->container( $self->__container );
     }
@@ -127,30 +105,9 @@ sub init {
 sub setup_container {
     my $self = shift;
     my $container_class = $self->load( 'container_class' );
-    $container_class->new;
+    my $container = $container_class->new;
+    $container;
 }
-
-sub setup_config {
-    my $self = shift;
-    my $config_class = $self->load( 'config_class' );
-    return $config_class->bootstrap;
-}
-
-sub setup_dispatcher {
-    my $self = shift;
-    my $dispatcher_class = $self->load( 'dispatcher_class' );
-    return $dispatcher_class->new( file => $self->get_routes_file );
-}
-
-sub get_routes_file {
-    my $self = shift;
-    my $file = Pickles::Util::env_value('ROUTES', $self->appname );
-    if (! $file) {
-        $file = $self->config->path_to( 'etc/routes.pl' );
-    }
-    return $file;
-}
-
 
 sub appname {
     my $self = shift;
@@ -358,11 +315,15 @@ returns a application name.
 
 =head2 $c->request, $c->req
 
-returns a L<Pickles::Request> object.
+returns a request object.
 
 =head2 $c->response, $c->res
 
-returns a L<Pickles::Response> object.
+returns a response object.
+
+=head2 $c->config
+
+returns config object.
 
 =head2 $c->render( [ $view_class ] );
 
@@ -383,11 +344,11 @@ if $url is not absolute, the value is passed to $c->uri_for
 
 abort next operation and goto finalize phase.
 
-=head2 MyApp->load_plugins(...);
+=head2 MyApp::Context->load_plugins(...);
 
 load plugins. Omit the C<Pickles::Plugin::> prefix from the name.
 
-=head2 MyApp->register( $name, $initializer );
+=head2 MyApp::Context->register( $name, $initializer );
 
 Register a object. This method is delegated to C<Container>.
 see L<Pickles::Container> for details.
@@ -413,10 +374,6 @@ if you want to use fully qualified class name, use plus sign prefix.
     # Foo::View
     MyApp::Context->view_class('+Foo::View');
 
-=head2 MyApp::Context->config_class
-
-default value is C<Config>
-
 =head2 MyApp::Context->request_class
 
 default value is C<+Pickles::Request>
@@ -428,10 +385,6 @@ default value is C<+Pickles::Response>
 =head2 MyApp::Context->view_class
 
 default value is C<View>
-
-=head2 MyApp::Context->dispatcher_class
-
-default value is C<Dispatcher>
 
 =head2 MyApp::Context->container_class
 

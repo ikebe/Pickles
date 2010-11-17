@@ -16,7 +16,7 @@ sub new {
     $self;
 }
 
-sub bootstrap {
+sub construct {
     my $class = shift;
     my $self = $class->new;
     my $files = $self->get_config_files;
@@ -145,11 +145,49 @@ Pickles::Config - Config Object
 =head1 SYNOPSIS
 
     use MyApp::Config;
-    my $config = MyApp::Config->new;
+    my $config = MyApp::Config->construct;
     my $component = $config->get( $component_name );
     my $path = $config->path_to( $subpath, ... );
 
-=head1 FILES
+=head1 METHODS
+
+=head2 Class->new([ files => \@files, home => $home ]);
+
+create new config object.
+
+=over 4
+
+=item files => \@files
+
+specify the config files.
+if relative paths are specified, convert to absolute path from application home.
+
+=item home => $home
+
+specify the application home directory.
+
+=back
+
+=head2 Class->construct;
+
+returns a config object which is based on predefined rules and ENV values.
+see CONSTRUCT RULES section.
+
+=head2 $config->home
+
+returns a application home dir's L<Path::Class::Dir> object.
+
+=head2 $config->get( $name, [$default_value] )
+
+get config value.
+
+=head2 $config->path_to( @path )
+
+construct absolute path from application home. 
+
+=head1 CONSTRUCT RULES
+
+following files and env values are used in I<construct>.
 
 =over 4
 

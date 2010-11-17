@@ -30,14 +30,14 @@ template: |+2
 
   use Plack::Builder;
   use [% module %];
-  use [% module %]::Config;
-  
-  my $app = [% module %]->handler;
-  my $config = [% module %]::Config->new;
+
+  my $webapp = [% module %]->new;
+  my $app = $webapp->handler;
+  my $config = $webapp->config;
   
   builder {
       enable 'Static',
-          path => qr{\.(jpg|gif|png|css|js|ico|swf)$}, root => $config->path_to('htdocs');
+          path => qr{^/static/}, root => $config->path_to('htdocs');
       $app;
   };
   
