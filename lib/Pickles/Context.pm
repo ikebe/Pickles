@@ -188,7 +188,7 @@ sub dispatch {
         }
     }
     catch {
-        Carp::croak $_ unless /^PICKLES_EXCEPTION_ABORT/
+        die $_ unless /^PICKLES_EXCEPTION_ABORT/
     };
     return $self->finalize;
 }
