@@ -46,7 +46,9 @@ sub setup_dispatcher {
     my $self = shift;
     my $dispatcher_class = 
         Plack::Util::load_class( $self->dispatcher_class, $self->appname );
-    $dispatcher_class->new( file => $self->get_routes_file );
+    my $dispatcher = $dispatcher_class->new( file => $self->get_routes_file );
+    $dispatcher->load_controllers( $self->appname );
+    $dispatcher;
 }
 
 sub get_routes_file {
