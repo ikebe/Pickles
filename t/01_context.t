@@ -3,13 +3,15 @@ use strict;
 use Plack::Test;
 use Test::More;
 use MyApp::Context;
+use MyApp;
 use HTTP::Request;
 use HTTP::Response;
 use HTTP::Message::PSGI;
 
 my $req = HTTP::Request->new( GET => 'http://localhost/foo' );
 my $env = $req->to_psgi;
-my $c = MyApp::Context->new( $env );
+
+my $c = MyApp->create_context( env => $env );
 
 ok $c->get('model_obj');
 is ref $c->get('model_obj'), 'MyApp::Model::Test';

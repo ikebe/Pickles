@@ -8,31 +8,20 @@ use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre
 use String::CamelCase qw(camelize);
 use Carp ();
 use Try::Tiny;
+use Scalar::Util qw(blessed);
 
 __PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
 
-__PACKAGE__->mk_classdata(container_class => 'Container');
 __PACKAGE__->mk_classdata(request_class => '+Pickles::Request');
 __PACKAGE__->mk_classdata(response_class => '+Pickles::Response');
 __PACKAGE__->mk_classdata(view_class => 'View');
 
+# shortcut for container.
 sub register {
-    my $class = shift;
-    my $container = $class->__container();
-    $container->register( @_ );
-}
-
-# class based cache.
-sub __container {
-    my $class = shift;
-    my $container;
-    try { $container = $class->__components->{'_container'}; };
-    if (! $container) {
-        $container = $class->setup_container;
-        $class->__components->{'_container'} = $container;
-    }
-    return $container;
+    my $self = shift;
+    Carp::croak( $self. '->register is deprecated. Use container profile file instead. See Pickles::Container for detail.' ) unless blessed( $self );
+    $self->container->register( @_ );
 }
 
 sub get {
@@ -90,23 +79,8 @@ sub new {
         finished => 0,
         %args,
     }, $class;
-    $self->init;
     $self->call_trigger('init');
     $self;
-}
-
-sub init {
-    my $self = shift;
-    unless ( $self->container ) {
-        $self->container( $self->__container );
-    }
-}
-
-sub setup_container {
-    my $self = shift;
-    my $container_class = $self->load( 'container_class' );
-    my $container = $container_class->new;
-    $container;
 }
 
 sub appname {
@@ -348,7 +322,7 @@ abort next operation and goto finalize phase.
 
 load plugins. Omit the C<Pickles::Plugin::> prefix from the name.
 
-=head2 MyApp::Context->register( $name, $initializer );
+=head2 $c->register( $name, $initializer );
 
 Register a object. This method is delegated to C<Container>.
 see L<Pickles::Container> for details.
@@ -385,10 +359,6 @@ default value is C<+Pickles::Response>
 =head2 MyApp::Context->view_class
 
 default value is C<View>
-
-=head2 MyApp::Context->container_class
-
-default value is C<Container>
 
 =head1 AUTHOR
 

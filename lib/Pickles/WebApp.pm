@@ -2,21 +2,22 @@ package Pickles::WebApp;
 use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
-use Plack::Util::Accessor qw(config dispatcher);
+use Plack::Util::Accessor qw(config dispatcher container);
 use Pickles::Util;
 use Scalar::Util qw(blessed);
 
 __PACKAGE__->mk_classdata( 'config_class' => 'Config' );
 __PACKAGE__->mk_classdata( 'dispatcher_class' => 'Dispatcher' );
 __PACKAGE__->mk_classdata( 'context_class' => 'Context' );
+__PACKAGE__->mk_classdata( 'container_class' => 'Container' );
 
 sub new {
     my $class = shift;
-    my $self = bless {}, $class;
-    my $config = $self->setup_config;
-    $self->config( $config );
-    my $dispatcher = $self->setup_dispatcher;
-    $self->dispatcher( $dispatcher );
+    my %args = @_;
+    my $self = bless { %args }, $class;
+    $self->config( $self->setup_config ) unless $self->config;
+    $self->dispatcher( $self->setup_dispatcher ) unless $self->dispatcher;
+    $self->container( $self->setup_container ) unless $self->container;
     $self;
 }
 
@@ -53,9 +54,31 @@ sub setup_dispatcher {
 
 sub get_routes_file {
     my $self = shift;
-    my $file = Pickles::Util::env_value('ROUTES', $self->appname );
+    my $file = Pickles::Util::env_value( 'ROUTES', $self->appname );
     if (! $file) {
         $file = $self->config->path_to( 'etc/routes.pl' );
+    }
+    return $file;
+}
+
+sub setup_container {
+    my $self = shift;
+    my $container_class = 
+        Plack::Util::load_class( $self->container_class, ref $self );
+    my $container = $container_class->new;
+    $container->register( config => $self->config );
+    my $file = $self->get_container_file;
+    if ( -e $file ) {
+        $container->load( $file );
+    } 
+    $container;
+}
+
+sub get_container_file {
+    my $self = shift;
+    my $file = Pickles::Util::env_value('CONTAINER_FILE', $self->appname );
+    if (! $file) {
+        $file = $self->config->path_to( 'etc/container.pl' );
     }
     return $file;
 }
@@ -66,6 +89,7 @@ sub create_context {
     my %args = ( 
         config => $self->config,
         dispatcher => $self->dispatcher,
+        container => $self->container,
         @_ 
     );
     my $context_class = 
@@ -134,6 +158,15 @@ if you'd like to use custom dispatcher object, override this method.
 
 returns a routes file which is used by dispatcher. the default value is $config->path_to('etc/routes.pl').
 
+=head2 $webapp->setup_container
+
+returns a container object
+if you'd like to use custom container object, override this method.
+
+=head2 $webapp->get_container_file
+
+returns a profile file which is used by container. the default value is $config->path_to('etc/container.pl').
+
 =head1 CLASS VARIABLES
 
 The following class variables specify component classes.
@@ -161,6 +194,10 @@ default value is C<Config>
 =head2 MyApp->dispatcher_class
 
 default value is C<Dispatcher>
+
+=head2 MyApp::Context->container_class
+
+default value is C<Container>
 
 =head1 AUTHOR
 
