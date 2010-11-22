@@ -1,7 +1,7 @@
 
 use strict;
 use Plack::Test;
-use Test::More tests => 22;
+use Test::More tests => 25;
 use MyApp::Config;
 use Scalar::Util qw(refaddr);
 
@@ -74,5 +74,15 @@ use Scalar::Util qw(refaddr);
     my $config = MyApp::Config->new( files => \@files );
     is $config->get('baz'), '1';
     is $config->get('dev'), '1';
+    is @{$config->{__FILES}}, 2;
+}
+
+{
+    my $config = MyApp::Config->new(
+        home  => ".",
+        files => [ "t/02_config_quux.pl" ]
+    );
+    is $config->get('quux'), 1;
+    is $config->get('quux_ext'), 1;
     is @{$config->{__FILES}}, 2;
 }

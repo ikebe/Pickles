@@ -1,6 +1,7 @@
 use strict;
 use Test::More;
 
+use_ok "Pickles::Config";
 use_ok "Pickles::Container";
 
 sub PicklesTestDummy::A::new { bless {}, $_[0] };
@@ -40,6 +41,7 @@ sub PicklesTestDummy::C::new { bless {}, $_[0] };
 
 {
     my $c = Pickles::Container->new();
+    $c->register( config => Pickles::Config->new( home => "." ) );
     $c->load( "t/04_container_profile.pl" );
 
     my $A = $c->get('foo');
@@ -53,6 +55,5 @@ sub PicklesTestDummy::C::new { bless {}, $_[0] };
     ok $C, "C is defined";
     isa_ok $C, "PicklesTestDummy::C";
 }
-
 
 done_testing;
