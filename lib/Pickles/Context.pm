@@ -155,15 +155,15 @@ sub dispatch {
         $self->call_trigger('pre_dispatch');
         $controller->execute( $action, $self );
         $self->call_trigger('post_dispatch');
-        unless ( $self->finished ) {
-            $self->call_trigger('pre_render');
-            $self->render;
-            $self->call_trigger('post_render');
-        }
     }
     catch {
         die $_ unless /^PICKLES_EXCEPTION_ABORT/
     };
+    unless ( $self->finished ) {
+        $self->call_trigger('pre_render');
+        $self->render;
+        $self->call_trigger('post_render');
+    }
     return $self->finalize;
 }
 
