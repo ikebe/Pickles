@@ -24,6 +24,7 @@ sub install {
             my $body = $c->res->body;
             my $config = $c->config->{'Plugin::Encode'};
             my $oe = $config->{output_encoding} || 'utf-8';
+            $c->res->content_type( $c->res->content_type. '; charset='. $oe );
             $c->res->body( Encode::encode( $oe, $body ) );
         }
     });
