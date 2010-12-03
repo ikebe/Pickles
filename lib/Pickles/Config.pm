@@ -1,5 +1,6 @@
 package Pickles::Config;
 use strict;
+use Carp ();
 use File::Spec;
 use Path::Class;
 use Plack::Util::Accessor qw(appname home);
@@ -56,7 +57,20 @@ sub load_files {
     # extra warnings (and possibly break the behavior of __path_to)
     # so we create a private closure, and plant the closure into
     # the generated packes
+    $self->{__FILES} = [];
+
     my $path_to = sub { $self->path_to(@_) };
+    my $load_file = sub {
+        my $file = $path_to->( @_ );
+        my $subconf = do $file;
+        # death context should be at the calling config file level
+        Carp::croak("Could not parse $file: $@") if $@;
+        Carp::croak("Could not do $file: $!")    if ! defined $subconf;
+        Carp::croak("Could not run $file")       if ! $subconf;
+
+        push @{$self->{__FILES}}, $file;
+        return $subconf;
+    };
 
     for my $file( @{$files} ) {
         # only do this if the file exists
@@ -70,6 +84,7 @@ sub load_files {
             no strict 'refs';
             no warnings 'redefine';
             *{"$fqname\::__path_to"} = $path_to;
+            *{"$fqname\::load_file"} = $load_file;
         }
 
         my $config_pkg = sprintf <<'SANDBOX', $fqname;
@@ -88,7 +103,7 @@ SANDBOX
             %{$conf},
         );
     }
-    $self->{__FILES} = $files;
+    push @{$self->{__FILES}}, @$files;
     $self->{__TIME} = time;
     for my $key( keys %config ) {
         $self->{$key} = $config{$key};

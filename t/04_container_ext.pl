@@ -1,0 +1,1 @@
+register 'ext' => sub { "External value!" };

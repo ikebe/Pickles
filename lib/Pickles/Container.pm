@@ -1,12 +1,14 @@
 package Pickles::Container;
 use strict;
+use Carp ();
 
 sub new {
-    my $class = shift;
+    my ($class, %args) = @_;
     bless {
+        components     => {},
+        home           => $args{home},
         objects        => {},
         scoped_objects => {},
-        components     => {},
     }, $class;
 }
 
@@ -33,6 +35,15 @@ sub load {
     local *register = sub($$;$) {
         $o->( $self, @_ );
     };
+    local *load_file = sub(@) {
+        my $c = $self->get('config');
+        # XXX what if there's no config?
+        my $file = $c->path_to(@_);
+        my $rv = do $file;
+        Carp::croak("Failed to parse file $file: $@") if $@;
+        Carp::croak("Failed to run file (did you return a true value?)") unless $rv;
+        return $rv;
+    };
     my $result = do $file;
     die "Failed to parse file $file: $@" if $@;
     die "Failed to run file (did you return a true value?)" unless $result;
@@ -48,6 +59,7 @@ sub components {
     return $h;
 }
 
+sub home { $_[0]->{home} }
 sub objects { $_[0]->{objects} }
 sub scoped_objects { $_[0]->{scoped_objects} }
 
