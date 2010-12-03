@@ -1,7 +1,6 @@
 package Pickles::Util;
 use strict;
 use Path::Class;
-use UNIVERSAL::require;
 use base qw(Exporter);
 use Carp ();
 
