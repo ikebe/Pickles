@@ -58,8 +58,11 @@ use Scalar::Util qw(refaddr);
         $config = MyApp::Config->construct;
     }
     if (ok $buffer) {
-        like $buffer, qr/02_config_bar\.pl: Bogus error/;
-        like $buffer, qr/02_config_bar_test\.pl: Bogus error/;
+        SKIP: {
+            skip "handling of do/die is different between versions...", 2 if $] < 5.012;
+            like $buffer, qr/02_config_bar\.pl: Bogus error/;
+            like $buffer, qr/02_config_bar_test\.pl: Bogus error/;
+        }
     }
 
     isa_ok( $config, 'MyApp::Config' );
