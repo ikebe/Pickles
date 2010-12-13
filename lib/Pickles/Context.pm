@@ -3,12 +3,14 @@ use strict;
 use base qw(Class::Data::Inheritable);
 use Plack::Util;
 use Plack::Util::Accessor qw(env stash finished controller config dispatcher container);
-use Pickles::Util;
 use Class::Trigger qw(init pre_dispatch post_dispatch pre_render post_render pre_finalize post_finalize);
 use String::CamelCase qw(camelize);
 use Carp ();
 use Try::Tiny;
 use Scalar::Util qw(blessed);
+
+use Pickles::Util;
+use Pickles::Controller;
 
 __PACKAGE__->mk_classdata(__components => {});
 __PACKAGE__->mk_classdata(__plugins => {});
@@ -140,8 +142,9 @@ sub dispatch {
     $self->_prepare;
     my $controller_class = $self->controller_class;
     my $action = $self->action;
-    unless ( $controller_class && defined $action ) {
-        return $self->handle_not_found;
+    unless ( $controller_class && $self->validate_action( $action ) ) {
+        $self->handle_not_found;
+        return $self->finalize;
     }
     my $controller;
     try { $controller = $self->__components->{"$controller_class"} };
@@ -209,7 +212,6 @@ sub handle_not_found {
     $self->res->status( 404 );
     $self->not_found;
     $self->finished(1);
-    $self->res->finalize;
 }
 
 sub not_found {
@@ -246,6 +248,18 @@ sub controller_class {
         $self->appname
     );
     $class;
+}
+
+my %_reserved_actions = 
+    map { $_ => 1 }
+    grep { defined &{"Pickles::Controller::$_"} } 
+    keys %{Pickles::Controller::};
+
+sub validate_action {
+    my( $self, $action ) = @_;
+    return unless defined $action;
+    return if $_reserved_actions{$action};
+    return $action =~ m{^[a-z][a-zA-Z0-9_]*$};
 }
 
 sub action {

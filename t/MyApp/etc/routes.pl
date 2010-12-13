@@ -10,4 +10,5 @@ router {
     connect '/form' => { controller => 'Root', action => 'form' };
     connect '/count' => { controller => 'Root', action => 'count' };
     connect '/items/:id' => { 'controller' => 'Item', action => 'view', };
+    connect '/bar/:action' => {'controller' => 'Bar',};
 };
