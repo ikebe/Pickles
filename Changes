@@ -1,5 +1,16 @@
 Revision history for Perl extension Pickles
 
+0.05 - 24 Jan 2011
+    * Upload to CPAN
+
+    [ BACKWARDS INCOMPATIBLE CHANGES ]
+    * validate controller's action name. an acceptable pattern is /^[a-z][a-zA-Z0-9_]*/ and you can not override core methods (eg: new, add_trigger ...)
+
+    [ ENHANCEMENTS ]
+    * Plugin::Encode add charset parameter to Content-Type header.
+
+    * implement loading external file from config and container.
+
 0.04 - 05 Nov 2010
 
     [ BACKWARDS INCOMPATIBLE CHANGES ]
