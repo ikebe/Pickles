@@ -1,6 +1,15 @@
 package Pickles::Plugin::Encode;
 use strict;
-use Encode;
+use Encode ();
+
+sub _decode {
+    my ($hmv, $ie) = @_;
+    for my $key( $hmv->keys ) {
+        my @values = map { Encode::decode($ie, $_) } $hmv->get_all( $key );
+        $hmv->remove( $key );
+        $hmv->add( $key => @values );
+    }
+}
 
 sub install {
     my( $class, $pkg ) = @_;
@@ -8,15 +17,9 @@ sub install {
         my $c = shift;
         my $config = $c->config->{'Plugin::Encode'};
         my $ie = $config->{input_encoding} || 'utf-8';
-        # params is-a Hash::MultiValue-
-        for my $key( keys %{$c->req->parameters} ) {
-            my @values;
-            for my $val( $c->req->parameters->get_all( $key ) ) {
-                push @values, Encode::decode($ie, $val);
-            }
-            $c->req->parameters->remove( $key );
-            $c->req->parameters->add( $key => @values );
-        }
+        _decode( $c->req->query_parameters, $ie );
+        _decode( $c->req->body_parameters, $ie );
+        delete $c->req->env->{'plack.request.merged'}; # make sure
     });
     $pkg->add_trigger( pre_finalize => sub {
         my( $c ) = @_;
