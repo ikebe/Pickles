@@ -33,6 +33,10 @@ sub install {
             $session->response_filter( $c->res );
         }
     });
+    $pkg->add_trigger( post_finalize => sub {
+        my $c = shift;
+        delete $c->env->{ $session_key };
+    } );
     $pkg->add_method( session => sub {
         my $c = shift;
         $c->env->{ $session_key };

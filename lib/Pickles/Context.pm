@@ -274,15 +274,6 @@ sub args {
     $match->{args};
 }
 
-sub DESTROY {
-    my $self = shift;
-    my $env = $self->env();
-    foreach my $key (keys %$env) {
-        delete $env->{$key};
-    }
-    %$self = ();
-}
-
 1;
 
 __END__
