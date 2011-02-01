@@ -1,5 +1,17 @@
 Revision history for Perl extension Pickles
 
+0.06
+    [MISCELLANEOUS]
+    * Changed the storage location for Plugin::Session to be inside
+      $env->{'pickles.session'}
+    * Explicitly free Context when request is done.
+    * Explicitly free Context->env to clear any circular dependencies.
+
+    [BUGFIXES]
+    * Previously only $request->parameters were decoded in Plugin::Encode.
+      Now body_parameters() and query_parameters() are decoded as necessary,
+      along with parameters()
+
 0.05 - 24 Jan 2011
     * Upload to CPAN
 
