@@ -1,21 +1,29 @@
 package Pickles::Plugin::Session;
 use strict;
+my $session_key = 'pickles.session';
+my ($plack_session_loaded, $http_session_loaded);
 
 sub install {
     my( $class, $pkg ) = @_;
     $pkg->add_trigger( init => sub {
         my $c = shift;
         if ( $c->env->{'psgix.session'} ) {
-            eval { require Plack::Session };
-            die if $@;
-            $c->stash->{'_session'} = Plack::Session->new( $c->env );
+            if ( ! $plack_session_loaded) {
+                eval { require Plack::Session };
+                die if $@;
+                $plack_session_loaded++;
+            }
+            $c->env->{ $session_key } = Plack::Session->new( $c->env );
         }
         else {
-            eval { require HTTP::Session };
-            die if $@;
+            if ( ! $http_session_loaded ) {
+                eval { require HTTP::Session };
+                die if $@;
+                $http_session_loaded++;
+            }
             my $config = $c->config->{'Plugin::Session'};
             my $session= HTTP::Session->new( %{$config}, request => $c->req );
-            $c->stash->{'_session'} = $session;
+            $c->env->{ $session_key } = $session;
         }
     });
     $pkg->add_trigger( pre_finalize => sub {
@@ -27,7 +35,7 @@ sub install {
     });
     $pkg->add_method( session => sub {
         my $c = shift;
-        $c->stash->{'_session'};
+        $c->env->{ $session_key };
     });
 }
 
