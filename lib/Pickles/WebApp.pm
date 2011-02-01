@@ -29,7 +29,9 @@ sub handler {
         my $c = $self->create_context(
             env => $env,
         );
-        $c->dispatch;
+        my $res = $c->dispatch;
+        undef $c;
+        return $res;
     };
     $app;
 }
