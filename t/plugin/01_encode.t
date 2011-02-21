@@ -30,4 +30,30 @@ subtest 'query_parameters' => sub {
     like($c->res->body, qr/ライブドア/);
 };
 
+subtest 'multibyte_args' => sub {
+    use utf8;
+    my $req = HTTP::Request->new( GET => 'http://localhost/foo/multibyte_args/%E3%83%A9%E3%82%A4%E3%83%96%E3%83%89%E3%82%A2/' );
+    my $env = $req->to_psgi;
+    my $c = MyApp->create_context( env => $env );
+    $c->dispatch;
+    ok(utf8::is_utf8($c->args->{ja}));
+    is($c->args->{ja}, 'ライブドア') ;
+    no utf8;
+};
+subtest 'multibyte_array_args' => sub {
+    use utf8;
+    my $req = HTTP::Request->new( GET => 'http://localhost/foo/multibyte_array_args/%E3%83%A9%E3%82%A4%E3%83%96%E3%83%89%E3%82%A2/%E3%83%A9%E3%82%A4%E3%83%96%E3%83%89%E3%82%A2/' );
+    my $env = $req->to_psgi;
+    my $c = MyApp->create_context( env => $env );
+    $c->dispatch;
+    for (@{$c->args->{splat}}) {
+        ok(utf8::is_utf8($_));
+        is($_, 'ライブドア') ;
+    }
+    no utf8;
+};
+ 
+  
+
+
 done_testing;
