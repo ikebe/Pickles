@@ -62,7 +62,8 @@ sub load_files {
     my $path_to = sub { $self->path_to(@_) };
     my $load_file = sub {
         my $file = $path_to->( @_ );
-        my $subconf = do $file;
+        delete $INC{$file};
+        my $subconf = require $file;
         # death context should be at the calling config file level
         Carp::croak("Could not parse $file: $@") if $@;
         Carp::croak("Could not do $file: $!")    if ! defined $subconf;
