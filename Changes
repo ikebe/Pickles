@@ -2,6 +2,7 @@ Revision history for Perl extension Pickles
 
 0.07
     * Now Plugin::Encode decodes $c->args
+    * Use require() instead of do() to read config files and container files
 
 0.06
     [MISCELLANEOUS]

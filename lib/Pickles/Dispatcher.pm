@@ -1,9 +1,10 @@
 package Pickles::Dispatcher;
 use strict;
-use Router::Simple;
-use Plack::Util;
-use String::CamelCase qw(camelize);
 use Carp ();
+use Cwd();
+use Plack::Util;
+use Router::Simple;
+use String::CamelCase qw(camelize);
 
 sub new {
     my ($class, %args) = @_;
@@ -12,12 +13,16 @@ sub new {
     my $pkg = $file;
     $pkg =~ s/([^A-Za-z0-9_])/sprintf("_%2x", unpack("C", $1))/eg;
 
+    if (! File::Spec->file_name_is_absolute( $file ) ) {
+        $file = Cwd::abs_path( $file );
+    }
     my $fqname = sprintf '%s::%s', $class, $pkg;
     my $router_pkg = sprintf <<'SANDBOX', $fqname;
 package %s;
 use Router::Simple::Declare;
 {
-    my $conf = do $file or die $!;
+    delete $INC{$file};
+    my $conf = require $file or die $!;
     $conf;
 }
 SANDBOX

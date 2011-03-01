@@ -39,7 +39,9 @@ sub load {
         my $c = $self->get('config');
         # XXX what if there's no config?
         my $file = $c->path_to(@_);
-        my $rv = do $file;
+
+        delete $INC{$file};
+        my $rv = require $file;
         Carp::croak("Failed to parse file $file: $@") if $@;
         Carp::croak("Failed to run file (did you return a true value?)") unless $rv;
         return $rv;
