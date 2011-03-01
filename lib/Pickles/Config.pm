@@ -62,8 +62,7 @@ sub load_files {
     my $path_to = sub { $self->path_to(@_) };
     my $load_file = sub {
         my $file = $path_to->( @_ );
-        delete $INC{$file};
-        my $subconf = require $file;
+        my $subconf = do $file;
         # death context should be at the calling config file level
         Carp::croak("Could not parse $file: $@") if $@;
         Carp::croak("Could not do $file: $!")    if ! defined $subconf;
@@ -91,11 +90,10 @@ sub load_files {
         my $config_pkg = sprintf <<'SANDBOX', $fqname;
 package %s;
 {
-    my $conf = require $file or die $!;
+    my $conf = do $file or die $!;
     $conf;
 }
 SANDBOX
-        delete $INC{$file};
         my $conf = eval $config_pkg || +{};
         if ($@) {
             warn "Error while trying to read config file $file: $@";
