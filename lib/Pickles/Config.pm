@@ -91,10 +91,11 @@ sub load_files {
         my $config_pkg = sprintf <<'SANDBOX', $fqname;
 package %s;
 {
-    my $conf = do $file or die $!;
+    my $conf = require $file or die $!;
     $conf;
 }
 SANDBOX
+        delete $INC{$file};
         my $conf = eval $config_pkg || +{};
         if ($@) {
             warn "Error while trying to read config file $file: $@";
