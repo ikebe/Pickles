@@ -33,6 +33,13 @@ sub multibyte_args {
     $c->finished(1);
 }
 
+sub force_status {
+    my( $self, $c ) = @_;
+    my $status = $c->req->param('status');
+    my $method = "res$status";
+    $self->$method($c);
+}
+
 1;
 
 __END__
