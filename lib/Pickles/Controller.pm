@@ -24,6 +24,31 @@ sub execute {
     return 1;
 }
 
+sub REPLY {
+    my ($self, $c, $status) = @_;
+
+    require HTTP::Status;
+    my $res = $c->res;
+    $res->status( $status );
+    $res->content_type('text/plain');
+    $res->body( HTTP::Status::status_message( $status ) );
+    return $res;
+}
+
+BEGIN {
+    foreach my $code (403, 404, 500) {
+        no strict 'refs';
+        no warnings 'redefine';
+        my $method = "res$code";
+        *{$method} = sub {
+            my ($self, $c) = @_;
+            $self->REPLY($c, $code);
+            $c->finished(1);
+            $c->abort();
+        };
+    }
+}
+
 1;
 
 __END__

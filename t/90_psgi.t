@@ -88,4 +88,15 @@ test_psgi
         is $res->code, '404';
     } ;
 
+# 404 Not Found, but via a forceful method
+test_psgi
+    app => MyApp->handler,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/foo/force_status?status=404' );
+        my $res = $cb->( $req );
+        is $res->code, '404';
+        is $res->content, "Not Found";
+    } ;
+
 done_testing();

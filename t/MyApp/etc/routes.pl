@@ -5,6 +5,7 @@ router {
     connect '/foo/post' => { controller => 'Foo', action => 'post', }, { method => 'POST' };
     connect '/foo/multibyte_args/{ja}/' => { controller => 'Foo', action => 'multibyte_args', };
     connect qr{/foo/multibyte_array_args/(.+)/(.+)/} => { controller => 'Foo', action => 'multibyte_args', };
+    connect '/foo/force_status' => { controller => 'Foo', action => 'force_status' };
 
 
     connect '/redirect' => { controller => 'Root', action => 'redirect' };
