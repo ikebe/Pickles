@@ -44,7 +44,7 @@ sub install {
             my $c = shift;
             $c->res->status( 403 );
             $c->res->body( 'Forbidden' );
-            $c->finished(1);
+            $c->finished( 1 );
             $c->abort;
         });
     }
