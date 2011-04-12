@@ -23,7 +23,7 @@ sub install {
         my $body = $c->res->body;
         my $token = 
             $c->session->get( $token_name ) || random_regex("[a-zA-Z0-9_]{$length}");
-        $body =~ s{</form>}{<input type="hidden" name="$token_name" value="$token" /></form>}ig;
+        $body =~ s{(<form\s.*method="?post"?.*?>)}{$1<input type="hidden" name="$token_name" value="$token" />}ig;
         $c->res->body( $body );
         $c->session->set( $token_name => $token );
     } );
