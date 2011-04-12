@@ -18,7 +18,7 @@ foreach my $module ( qw( HTTP::Session String::Random ) ) {
         last;
     }
 }
-plan tests => 5;
+plan tests => 14;
 
 $ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session AntiCSRF FillInForm));
@@ -65,6 +65,57 @@ test_psgi
         is $res->code, '200';
     } ;
 
+# skip
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( POST => 'http://localhost/form_skip' );
+        my $res = $cb->( $req );
+        is $res->code, '200';
+    } ;
 
+# fill token
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/form2' );
+        my $res = $cb->( $req );
+        ($token) = $res->content =~ qr/name="_token" value="(.*?)"/;
+        ok( $token, 'got token form2' );
+        is $res->code, '200';
+    } ;
 
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/form3' );
+        my $res = $cb->( $req );
+        ($token) = $res->content =~ qr/name="_token" value="(.*?)"/;
+        ok( $token, 'got token form3' );
+        is $res->code, '200';
+    } ;
 
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/form_get' );
+        my $res = $cb->( $req );
+        ($token) = $res->content =~ qr/name="_token" value="(.*?)"/;
+        ok( !$token, 'no got token form_get' );
+        is $res->code, '200';
+    } ;
+
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/form_get2' );
+        my $res = $cb->( $req );
+        ($token) = $res->content =~ qr/name="_token" value="(.*?)"/;
+        ok( !$token, 'no got token form_get2' );
+        is $res->code, '200';
+    } ;
