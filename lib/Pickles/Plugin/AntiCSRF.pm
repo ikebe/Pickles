@@ -56,29 +56,16 @@ __END__
 
 =head1 NAME
 
-Pickles::Plugin::AntiCSRF - csrf block plugin
+Pickles::Plugin::AntiCSRF - CSRF Block Plugin
 
 =head1 SYNOPSIS
 
-  ## etc/routes.pl
-  router {
-      connect '/' => { controller => 'Root', action => 'index' };
-      
-      # protected!
-      connect '/commit' => { controller => 'Root', action => 'commit' }, { method => 'POST' };
-      # !! WARNING !!
-      # get method is not protected!
-      # So must be specified "method"
-  };
+  package MyApp::Context;
+  use parent qw(Pickles::Context);
 
-  ## lib/MyApp/Context.pm
-  
   __PACKAGE__->load_plugins(qw(Encode AntiCSRF));
 
-=head1 config
-
   ## etc/config.pl
-
   return +{
       'Plugin::AntiCSRF' => {
           token_name => '_token',
@@ -86,9 +73,24 @@ Pickles::Plugin::AntiCSRF - csrf block plugin
       }
   };
 
-=head1 how to skip
+  # etc/routes.pl
+  router {
+      # no CSRF protection
+      connect '/' => { controller => 'Root', action => 'index' };
+      
+      # Automatically protected!
+      connect '/commit' =>
+        { controller => 'Root', action => 'commit' },
+        { method => 'POST' };
+  };
 
-=head2 by trigger
+=head1 DESCRIPTION
+
+Provides basic CSRF detection/protection.
+
+=head1 CONTROLLING CSRF CHECK
+
+=head2 USING THE STASH
 
   ## lib/MyApp/Context.pm
 
@@ -96,20 +98,22 @@ Pickles::Plugin::AntiCSRF - csrf block plugin
 
   __PACKAGE__->add_trigger( init => sub {
       my( $c ) = @_;
-      
       if ($c->req->path=~m|^/api|) {
           $c->stash->{skip_csrf_check}++;
       }
   } );
 
-=head2 by routes.pl
+=head2 USING ROUTES
 
-  ## etc/routes.pl
-  router {
-      connect '/' => { controller => 'Root', action => 'index' };
-    
-      # no protected!
-      connect '/api' => { controller => 'Root', action => 'api', skip_csrf_check => 1 }, { method => 'POST' };
-  };
+    connect '/api' =>
+        {
+            controller => 'Root',
+            action => 'api',
+            skip_csrf_check => 1 # Disable CSRF check
+        },
+        {
+            method => 'POST'
+        }
+    ;
 
 =cut
