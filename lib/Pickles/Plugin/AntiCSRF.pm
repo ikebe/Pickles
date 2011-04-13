@@ -16,9 +16,6 @@ sub install {
             # an HTML document
             return;
         }
-        if ($c->stash->{skip_csrf_fill}) {
-            return;
-        }
         my $config = $c->config->{'Plugin::AntiCSRF'};
         my $token_name = $config->{token_name} || '_token';
         my $length = $config->{token_length} || 8;
