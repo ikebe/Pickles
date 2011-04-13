@@ -53,3 +53,63 @@ sub install {
 1;
 
 __END__
+
+=head1 NAME
+
+Pickles::Plugin::AntiCSRF - csrf block plugin
+
+=head1 SYNOPSIS
+
+  ## etc/routes.pl
+  router {
+      connect '/' => { controller => 'Root', action => 'index' };
+      
+      # protected!
+      connect '/commit' => { controller => 'Root', action => 'commit' }, { method => 'POST' };
+      # !! WARNING !!
+      # get method is not protected!
+      # So must be specified "method"
+  };
+
+  ## lib/MyApp/Context.pm
+  
+  __PACKAGE__->load_plugins(qw(Encode AntiCSRF));
+
+=head1 config
+
+  ## etc/config.pl
+
+  return +{
+      'Plugin::AntiCSRF' => {
+          token_name => '_token',
+          token_length => 8
+      }
+  };
+
+=head1 how to skip
+
+=head2 by trigger
+
+  ## lib/MyApp/Context.pm
+
+  __PACKAGE__->load_plugins(qw(Encode AntiCSRF));
+
+  __PACKAGE__->add_trigger( init => sub {
+      my( $c ) = @_;
+      
+      if ($c->req->path=~m|^/api|) {
+          $c->stash->{skip_csrf_check}++;
+      }
+  } );
+
+=head2 by routes.pl
+
+  ## etc/routes.pl
+  router {
+      connect '/' => { controller => 'Root', action => 'index' };
+    
+      # no protected!
+      connect '/api' => { controller => 'Root', action => 'api', skip_csrf_check => 1 }, { method => 'POST' };
+  };
+
+=cut

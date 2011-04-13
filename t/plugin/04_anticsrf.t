@@ -18,7 +18,7 @@ foreach my $module ( qw( HTTP::Session String::Random ) ) {
         last;
     }
 }
-plan tests => 14;
+plan tests => 15;
 
 $ENV{'MYAPP_ENV'} = 'session';
 MyApp::Context->load_plugins(qw(Session AntiCSRF FillInForm));
@@ -71,6 +71,15 @@ test_psgi
     client => sub {
         my $cb = shift;
         my $req = HTTP::Request->new( POST => 'http://localhost/form_skip' );
+        my $res = $cb->( $req );
+        is $res->code, '200';
+    } ;
+
+test_psgi
+    app => $app,
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( POST => 'http://localhost/api' );
         my $res = $cb->( $req );
         is $res->code, '200';
     } ;

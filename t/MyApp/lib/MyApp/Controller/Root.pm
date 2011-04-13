@@ -33,6 +33,13 @@ sub form {
     my( $self, $c ) = @_;
 }
 
+sub api {
+    my( $self, $c ) = @_;
+    
+    $c->res->body('ok');
+    $c->finished(1);
+}
+
 sub count {
     my( $self, $c ) = @_;
     my $count = $c->session->get('count');

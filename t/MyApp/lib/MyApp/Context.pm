@@ -13,7 +13,13 @@ use MyApp::Model::Test;
 #     MyApp::ControllerValue->new;
 # });
 
-
+__PACKAGE__->add_trigger( init => sub {
+    my( $c ) = @_;
+    
+    if ($c->req->path=~m|^/api|) {
+        $c->stash->{skip_csrf_check}++;
+    }
+} );
 
 1;
 
