@@ -34,7 +34,7 @@ sub install {
         my $c = shift;
         my $token_name = 
             $c->config->{'Plugin::AntiCSRF'}->{token_name} || '_token';
-        if ( $c->req->method eq 'POST' && !$c->stash->{skip_csrf_check} && !$c->args->{skip_csrf_check}) {
+        if ( $c->req->method eq 'POST' && !$c->stash->{skip_csrf_check} ) {
             my $req_val = $c->req->param( $token_name );
             my $session_val = $c->session->get( $token_name );
             unless ( $req_val && $session_val && ($req_val eq $session_val) ) {
