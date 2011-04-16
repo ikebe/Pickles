@@ -53,3 +53,67 @@ sub install {
 1;
 
 __END__
+
+=head1 NAME
+
+Pickles::Plugin::AntiCSRF - CSRF Block Plugin
+
+=head1 SYNOPSIS
+
+  package MyApp::Context;
+  use parent qw(Pickles::Context);
+
+  __PACKAGE__->load_plugins(qw(Encode AntiCSRF));
+
+  ## etc/config.pl
+  return +{
+      'Plugin::AntiCSRF' => {
+          token_name => '_token',
+          token_length => 8
+      }
+  };
+
+  # etc/routes.pl
+  router {
+      # no CSRF protection
+      connect '/' => { controller => 'Root', action => 'index' };
+      
+      # Automatically protected!
+      connect '/commit' =>
+        { controller => 'Root', action => 'commit' },
+        { method => 'POST' };
+  };
+
+=head1 DESCRIPTION
+
+Provides basic CSRF detection/protection.
+
+=head1 CONTROLLING CSRF CHECK
+
+=head2 USING THE STASH
+
+  ## lib/MyApp/Context.pm
+
+  __PACKAGE__->load_plugins(qw(Encode AntiCSRF));
+
+  __PACKAGE__->add_trigger( init => sub {
+      my( $c ) = @_;
+      if ($c->req->path=~m|^/api|) {
+          $c->stash->{skip_csrf_check}++;
+      }
+  } );
+
+=head2 USING ROUTES
+
+    connect '/api' =>
+        {
+            controller => 'Root',
+            action => 'api',
+            skip_csrf_check => 1 # Disable CSRF check
+        },
+        {
+            method => 'POST'
+        }
+    ;
+
+=cut

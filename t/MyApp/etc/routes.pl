@@ -18,6 +18,7 @@ router {
     connect '/form_skip' => { controller => 'Root', action => 'form', skip_csrf_check => 1 };
     connect '/form_get' => { controller => 'Root', action => 'form' };
     connect '/form_get2' => { controller => 'Root', action => 'form' };
+    connect '/api' => { controller => 'Root', action => 'api' }, { method => 'POST' };
     connect '/count' => { controller => 'Root', action => 'count' };
     connect '/items/:id' => { 'controller' => 'Item', action => 'view', };
     connect '/bar/:action' => {'controller' => 'Bar',};
