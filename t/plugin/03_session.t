@@ -9,7 +9,10 @@ use HTTP::Response;
 use HTTP::Message::PSGI;
 use MyApp;
 
-eval { require HTTP::Session };
+eval {
+    require HTTP::Session;
+    require HTML::FillInForm;
+};
 if ( $@ ) {
     plan skip_all => "HTTP::Session is not installed";
 }
