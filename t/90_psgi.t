@@ -103,7 +103,7 @@ test_psgi
 # 500
 test_psgi
     app => builder {
-        enable "StackTrace";
+        enable "StackTrace", no_print_errors => 1;
         MyApp->handler
     },
     client => sub {
