@@ -1,6 +1,11 @@
 Revision history for Perl extension Pickles
 
-0.07
+0.08 - 28 Jul 2011
+    [MISCELLANEOUS]
+    * Now die()ing from the app produces a useful stacktrace (aska)
+    * Properly check for HTML::FillInForm before running tests that require it
+
+0.07 - 13 Apr 2011
     [MISCELLANEOUS]
     * Use require() instead of do() to read config files and container files
     * Plugin::AntiCSRF now checks if it should check for CSRFs instead
