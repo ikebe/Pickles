@@ -160,7 +160,10 @@ sub dispatch {
         $self->call_trigger('post_dispatch');
     }
     catch {
-        die $_ unless /^PICKLES_EXCEPTION_ABORT/
+        unless (/^PICKLES_EXCEPTION_ABORT/) {
+            local $SIG{__DIE__} = 'DEFAULT';
+            die $_;
+        }
     };
     unless ( $self->finished ) {
         $self->call_trigger('pre_render');

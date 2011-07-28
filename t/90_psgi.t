@@ -1,5 +1,6 @@
 
 use strict;
+use Plack::Builder;
 use Plack::Test;
 use Test::More;
 use MyApp;
@@ -97,6 +98,21 @@ test_psgi
         my $res = $cb->( $req );
         is $res->code, '404';
         is $res->content, "Not Found";
+    } ;
+
+# 500
+test_psgi
+    app => builder {
+        enable "StackTrace";
+        MyApp->handler
+    },
+    client => sub {
+        my $cb = shift;
+        my $req = HTTP::Request->new( GET => 'http://localhost/foo/error' );
+        $req->header('Accept' => 'text/html');
+        my $res = $cb->( $req );
+        is $res->code, '500';
+        like $res->content, qr|\Qdie &quot;error&quot;\E|;
     } ;
 
 done_testing();
