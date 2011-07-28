@@ -6,6 +6,7 @@ router {
     connect '/foo/multibyte_args/{ja}/' => { controller => 'Foo', action => 'multibyte_args', };
     connect qr{/foo/multibyte_array_args/(.+)/(.+)/} => { controller => 'Foo', action => 'multibyte_args', };
     connect '/foo/force_status' => { controller => 'Foo', action => 'force_status' };
+    connect '/foo/error' => { controller => 'Foo', action => 'error' };
 
 
     connect '/redirect' => { controller => 'Root', action => 'redirect' };

@@ -40,6 +40,10 @@ sub force_status {
     $self->$method($c);
 }
 
+sub error {
+    die "error";
+}
+
 1;
 
 __END__

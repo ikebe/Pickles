@@ -5,7 +5,7 @@ use MyApp::Config;
 use Plack::Builder;
 
 my $app = MyApp->handler;
-my $config = MyApp::Config->instance;
+my $config = MyApp::Config->construct;
 
 builder {
     enable 'Static',
