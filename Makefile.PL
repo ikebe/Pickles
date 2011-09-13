@@ -3,9 +3,9 @@
 # build this module
 BEGIN {
     my @mi_mods = qw(
-        inc::Module::Install;
-        Module::Install::AuthorTests;
-        Module::Install::TestTarget;
+        inc::Module::Install
+        Module::Install::AuthorTests
+        Module::Install::TestTarget
     );
     my @unavailable;
     foreach my $mod ( @mi_mods ) {
