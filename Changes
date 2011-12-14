@@ -1,5 +1,11 @@
 Revision history for Perl extension Pickles
 
+0.09 - 14 Dec 2011
+    [MISCELLANEOUS]
+    * Stray semicolon(s) in Makefile.PL caused all kinds of havoc.
+    * Tests failed under new formatting for Plack.
+    * Remove use of auto_include
+
 0.08 - 28 Jul 2011
     [MISCELLANEOUS]
     * Now die()ing from the app produces a useful stacktrace (aska)
