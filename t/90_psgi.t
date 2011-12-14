@@ -112,7 +112,7 @@ test_psgi
         $req->header('Accept' => 'text/html');
         my $res = $cb->( $req );
         is $res->code, '500';
-        like $res->content, qr|\Qdie &quot;error&quot;\E|;
+        like $res->content, qr|\Qpickles.interntional.error\E|;
     } ;
 
 done_testing();
