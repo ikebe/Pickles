@@ -41,7 +41,7 @@ sub force_status {
 }
 
 sub error {
-    die "error";
+    die "pickles.intentional.error";
 }
 
 1;
