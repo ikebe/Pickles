@@ -3,14 +3,16 @@
 # build this module
 BEGIN {
     my @mi_mods = qw(
-        inc::Module::Install;
-        Module::Install::AuthorTests;
-        Module::Install::TestTarget;
+        inc::Module::Install
+        Module::Install::AuthorTests
+        Module::Install::TestTarget
     );
     my @unavailable;
     foreach my $mod ( @mi_mods ) {
-        eval qq{ require $mod } or 
+        eval qq{ use $mod };
+        if ($@) {
             push @unavailable, $mod;
+        }
     }
 
     if (@unavailable) {
@@ -39,7 +41,6 @@ and try again
 EOM
         exit 0;
     }
-    Module::Install->import;
 }
 
 
