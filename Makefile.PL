@@ -65,8 +65,6 @@ requires 'Text::Xslate::Bridge::TT2Like';
 
 install_script 'script/pickles-setup';
 
-auto_include;
-
 default_test_target 
     includes => "t/MyApp/lib"
 ;
