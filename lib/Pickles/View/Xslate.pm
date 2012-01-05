@@ -22,6 +22,7 @@ sub render {
                 $c->config->path_to('view', 'inc'),
             ],
             %{$config},
+            $ENV{PLACK_ENV} eq 'production' ? ( cache => 1 ) : (),
         );
     }
     my $template = $c->stash->{'VIEW_TEMPLATE'};
