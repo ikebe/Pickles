@@ -1,5 +1,9 @@
 Revision history for Perl extension Pickles
 
+0.10 - 05 Jan 2012
+    [MISCELLANEOUS]
+    * Force cache => 1 on Text::Xslate when PLACK_ENV is 'production'.
+
 0.09 - 14 Dec 2011
     [MISCELLANEOUS]
     * Stray semicolon(s) in Makefile.PL caused all kinds of havoc.
